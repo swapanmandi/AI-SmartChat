@@ -2,6 +2,7 @@ import React from 'react'
 import LeftSidebar from '../components/LeftSidebar'
 import Prompt from '../components/Prompt'
 import Chat from '../components/Chat'
+import ChatApp from '../sample'
 
 export default function Home() {
   return (
@@ -15,8 +16,9 @@ export default function Home() {
    
    </div> 
    <div className=" bg-orange-300 bottom-0 fixed left-1/2">
-          <Prompt />
+          
         </div>
+        {/* <ChatApp /> */}
    </div>
    </>
   )

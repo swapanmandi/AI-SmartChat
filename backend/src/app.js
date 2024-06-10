@@ -16,6 +16,6 @@ app.use(express.urlencoded({
 
 
 //route ddeclaration
-app.use('/api/v1', chatRouter)
+app.use('/', chatRouter)
 
 export {app}

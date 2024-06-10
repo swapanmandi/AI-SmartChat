@@ -3,19 +3,19 @@ import Prompt from "./Prompt.jsx";
 import axios from "axios";
 
 export default function Chat() {
-  const [receivedObj, setReceivedObj] = useState(null);
+  
   const [messages, setmessages] = useState([]);
 
   const getResponse = async (obj) => {
-    setReceivedObj(obj);
+   
     try {
       const res = await axios.post("http://localhost:8000/chat", {
-        receivedObj,
+        receivedObj: obj
       });
 
       setmessages([
         ...messages,
-        { sender: "user", message: receivedObj.data },
+        { sender: "user", message: obj.data },
         { sender: "model", message: res.data.chat },
       ]);
     } catch (error) {

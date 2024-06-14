@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Prompt from "./Prompt.jsx";
 import axios from "axios";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import Markdown from 'react-markdown'
-import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
-import {dark} from 'react-syntax-highlighter/dist/esm/styles/prism'
-
+import Markdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { dark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 export default function Chat() {
-  const [messages, setmessages] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [copyStatus, setCopyStatus] = useState(false);
+
+  //getting backend response
 
   const getResponse = async (obj) => {
     try {
@@ -17,8 +20,13 @@ export default function Chat() {
         receivedObj: obj,
       });
 
-      setmessages([
-        ...messages,
+      // setMessages([
+      //   ...messages,
+      //   { sender: "user", message: obj.data },
+      //   { sender: "model", message: res.data.chat },
+      // ]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
         { sender: "user", message: obj.data },
         { sender: "model", message: res.data.chat },
       ]);
@@ -26,11 +34,11 @@ export default function Chat() {
       console.log("Error while receiving data", error);
     }
   };
-
   console.log("quer", messages);
 
-  //generate pdf
+  //end of backend
 
+  //generate pdf
   const generatePdf = () => {
     const input = document.getElementById("pdfContainer");
     html2canvas(input, { scale: 2 })
@@ -60,14 +68,24 @@ export default function Chat() {
         console.log("Error to generate Pdf.", error);
       });
   };
+  //end of generate pdf
+
+  //handle copy button
+  const handleCopy = () => {
+    setCopyStatus(true);
+
+    setTimeout(() => {
+      setCopyStatus(false);
+    }, 2000);
+  };
+
+  //end of handle copy btn
 
   return (
     <div
       id="pdfContainer"
-      className=" overflow-y-auto bg-gray-950  h-screen flex flex-col border border-gray-300 rounded-lg p-4"
+      className=" overflow-y-auto bg-red-600  h-screen flex flex-col border border-gray-300 rounded-lg p-4"
     >
-       
-
       <div className=" mb-4">
         {messages.map((item, index) => (
           <div
@@ -80,35 +98,52 @@ export default function Chat() {
           >
             <div className=" overflow-auto text-center items-center p-1 bg-white text-black rounded-lg">
               {/* <p className="">{item.message}</p> */}
-          
-              <Markdown
-    children={item.message}
-    components={{
-      code(props) {
-        const {children, className, node, ...rest} = props
-        const match = /language-(\w+)/.exec(className || '')
-        return match ? (
-          <SyntaxHighlighter
-            {...rest}
-            PreTag="div"
-            children={String(children).replace(/\n$/, '')}
-            language={match[1]}
-            style={dark}
-          />
-        ) : (
-          <code {...rest} className={className}>
-            {children}
-          </code>
-        )
-      }
-    }}
-  />
 
+              <Markdown
+                children={item.message}
+                components={{
+                  code(props) {
+                    const { children, className, node, ...rest } = props;
+                    const match = /language-(\w+)/.exec(className || "");
+                    const codeString = String(children).replace(/\n$/, "");
+
+                    return match ? (
+                      <div>
+                        {console.log("d", codeString)}
+                        {/* //for copying code */}
+                        <CopyToClipboard text={codeString} onCopy={handleCopy}>
+                          <button className=" bg-emerald-500">Copy</button>
+                        </CopyToClipboard>
+
+                        <SyntaxHighlighter
+                          {...rest}
+                          PreTag="div"
+                          //children={String(children).replace(/\n$/, '')}
+                          language={match[1]}
+                          style={dark}
+                        >
+                          {codeString}
+                        </SyntaxHighlighter>
+                      </div>
+                    ) : (
+                      <code {...rest} className={className}>
+                        {children}
+                      </code>
+                    );
+                  },
+                }}
+              />
             </div>
           </div>
         ))}
       </div>
-      {messages.length >= 5 && (
+      {copyStatus && (
+        <span className=" justify-center items-center flex bg-slate-500 h-8 rounded-md shadow-md w-20  translate-y-6 bottom-10 right-4 fixed">
+          <h2>Copied</h2>
+        </span>
+      )}
+
+      {messages.length >= 4 && (
         <button
           onClick={generatePdf}
           className=" z-10 bg-slate-600 w-fit p-2 rounded-full"

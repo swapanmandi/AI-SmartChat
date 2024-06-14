@@ -11,7 +11,8 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [copyStatus, setCopyStatus] = useState(false);
-
+const [copyText, setCopyText] = useState('');
+const copyRef = useRef(null)
   //getting backend response
 
   const getResponse = async (obj) => {
@@ -34,7 +35,6 @@ export default function Chat() {
       console.log("Error while receiving data", error);
     }
   };
-  console.log("quer", messages);
 
   //end of backend
 
@@ -81,6 +81,20 @@ export default function Chat() {
 
   //end of handle copy btn
 
+  //handle text copy
+  const handleCopyText = () =>{
+    if(copyRef.current){
+      navigator.clipboard.writeText(copyRef.current.innerText)
+      .then(() =>{
+        setCopyStatus(true);
+        setTimeout(()=>{
+          setCopyStatus(false)
+        }, 2000)
+      })
+      .then(err => 'Error to copy', error)
+    }
+  }
+
   return (
     <div
       id="pdfContainer"
@@ -96,6 +110,10 @@ export default function Chat() {
                 : "flex justify-end"
             }   mb-2`}
           >
+            {item.sender === 'model' && (<div> 
+             <div className=" hidden" id="text" ref={copyRef}> <Markdown>{item.message}</Markdown> </div>
+            </div>)}
+
             <div className=" overflow-auto text-center items-center p-1 bg-white text-black rounded-lg">
               {/* <p className="">{item.message}</p> */}
 
@@ -108,8 +126,7 @@ export default function Chat() {
                     const codeString = String(children).replace(/\n$/, "");
 
                     return match ? (
-                      <div>
-                        {console.log("d", codeString)}
+                      <div >
                         {/* //for copying code */}
                         <CopyToClipboard text={codeString} onCopy={handleCopy}>
                           <button className=" bg-emerald-500">Copy</button>
@@ -134,6 +151,9 @@ export default function Chat() {
                 }}
               />
             </div>
+        {
+          item.sender === 'model' && (<button onClick={handleCopyText}>Copy</button>)
+        }
           </div>
         ))}
       </div>

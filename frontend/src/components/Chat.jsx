@@ -98,7 +98,7 @@ const copyRef = useRef(null)
   return (
     <div
       id="pdfContainer"
-      className=" overflow-y-auto bg-red-600  h-screen flex flex-col border border-gray-300 rounded-lg p-4"
+      className=" bg-amber-300 overflow-y-auto  h-screen lg:flex lg:flex-col border border-gray-300 rounded-lg p-4"
     >
       <div className=" mb-4">
         {messages.map((item, index) => (

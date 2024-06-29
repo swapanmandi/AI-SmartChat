@@ -1,100 +1,51 @@
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { User } from "../models/user.model.js";
+import {User} from "../models/user.model.js"
+import {ApiError} from '../utils/ApiError.js'
+import {ApiResponse} from "../utils/ApiResponse.js"
+import {asyncHandler} from '../utils/asyncHandler.js'
 
-const generateAccessAndRefreshToken = async (userId) => {
-  try {
-    const user = await User.findById(userId);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-    user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
-    return { accessToken, refreshToken };
-  } catch (error) {
-    throw new ApiError(
-      500,
-      "Something went wrong while generating access and refresh token."
-    );
-  }
-};
 
-//signup user
 
-const signupUser = asyncHandler(async (req, res) => {
-  const { email, password, fullName } = req.body;
-  console.log("email", email);
-  if ([email, password, fullName].some((item) => item?.trim() === "")) {
-    throw new ApiError(400, "All fields are required.");
-  }
+const generateAccessAndRefreshTokens  = asyncHandler( async (userId) =>{
+try {
+    const user = User.findById(userId);
+    const accessToken = user.generateAccessToken()
+    const refreshToken = user.generateRefreshToken()
+    user.refreshToken = refreshToken
+    await user.save({validateBeforeSave: false})
+    return {accessToken, refreshToken}
+} catch (error) {
+    throw new ApiError(500, "Error while generating access and refresh tokens")
+}
+})
 
-  const existedUser = await User.findOne({ email });
+const signupUser = asyncHandler(async (req, res)=>{
 
-  if (existedUser) {
-    throw new ApiError(409, "Email already Registered.");
-  }
+    const {fullName, email, password} = req.body
 
-  const user = await User.create({
-    email,
-    password,
-    fullName,
-  });
+    console.log(req.body)
 
-  const createdUser = await User.findById(user._id).select(
-    " -password -refreshToken"
-  );
+    if([fullName, email, password].some(item => item?.trim() === "")){
+        throw new ApiError(400, "All fields are required")
+    }
 
-  if (!createdUser) {
-    throw new ApiError(500, "Wrong While Registering User");
-  }
+    const existedUser = await User.findOne({email})
+    if(existedUser){
+        throw new ApiError(400, "Email is already Registered.")
+    }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, createdUser, "User Registered Sucessfully."));
-});
+    const user = await User.create({
+        fullName, email, password
+    })
 
-//login user
+    const createdUser = await User.findById(user._id).select("-password -refreshToken")
 
-const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  if (!email && !password) {
-    throw new ApiError(400, "All Fields are Required.");
-  }
+    if(!createdUser){
+        throw new ApiError(500, "Something went wrong while registering user.")
+    }
 
-  const user = await User.findOne({ email });
+    return res.status(200).json(
+        new ApiResponse(500, createdUser, "User Registered Successfully!")
+    )
+})
 
-  if (!user) {
-    throw new ApiError(404, "User does not exixt.");
-  }
-
-  const isPasswordValid = await user.isPasswordCorrect(password);
-
-  if (!isPasswordValid) {
-    throw new ApiError(401, "User Credentials Invalid.");
-  }
-
-  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-
-  const loggedInUser = await User.findById(user._id).select(
-    " -password -refreshToken"
-  );
-
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
-  return res
-    .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(
-      new ApiResponse(
-        200,
-        { user: loggedInUser, accessToken, refreshToken },
-        "Logged in Successfully."
-      )
-    );
-});
-
-export { signupUser, loginUser };
+export {signupUser}

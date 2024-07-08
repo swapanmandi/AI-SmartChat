@@ -1,177 +1,213 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Prompt from "./Prompt.jsx";
 import axios from "axios";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { v4 as uuidv4 } from "uuid";
 import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { dark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { useParams } from "react-router-dom";
 
 export default function Chat() {
+  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [copyStatus, setCopyStatus] = useState(false);
-const [copyText, setCopyText] = useState('');
-const copyRef = useRef(null)
-  //getting backend response
+  const [sessionId, setSessionId] = useState(uuidv4());
+  const [oldChat, setOldChat] = useState(null);
+  const [copiedIndex, setCopiedIndex] = useState(null) ;
+  const[copied, setCopied] = useState(false)
 
-  const getResponse = async (obj) => {
-    try {
-      const res = await axios.post("http://localhost:8000/chat", {
-        receivedObj: obj,
-      });
+  const { id } = useParams();
 
-      // setMessages([
-      //   ...messages,
-      //   { sender: "user", message: obj.data },
-      //   { sender: "model", message: res.data.chat },
-      // ]);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { sender: "user", message: obj.data },
-        { sender: "model", message: res.data.chat },
-      ]);
-    } catch (error) {
-      console.log("Error while receiving data", error);
-    }
-  };
-
-  //end of backend
-
-  //generate pdf
-  const generatePdf = () => {
-    const input = document.getElementById("pdfContainer");
-    html2canvas(input, { scale: 2 })
-      .then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "mm", "a4");
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = pdfWidth;
-        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
-        }
-        pdf.save("chatMessage.pdf");
-      })
-      .catch((error) => {
-        console.log("Error to generate Pdf.", error);
-      });
-  };
-  //end of generate pdf
-
-  //handle copy button
-  const handleCopy = () => {
-    setCopyStatus(true);
-
-    setTimeout(() => {
-      setCopyStatus(false);
-    }, 2000);
-  };
-
-  //end of handle copy btn
-
-  //handle text copy
-  const handleCopyText = () =>{
-    if(copyRef.current){
-      navigator.clipboard.writeText(copyRef.current.innerText)
-      .then(() =>{
-        setCopyStatus(true);
-        setTimeout(()=>{
-          setCopyStatus(false)
-        }, 2000)
-      })
-      .then(err => 'Error to copy', error)
-    }
+  console.log("id", id);
+  console.log("sess", sessionId);
+  
+  if (sessionId !== id) {
+    setSessionId(id);
   }
 
+  const handleQueryBtn = async (e) => {
+    e.preventDefault();
+    if (id) {
+      setSessionId(id);
+    }
+
+    const response = await axios.post(
+      "http://localhost:8000/chat/generateChat",
+      {
+        sessionId,
+        message,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    //console.log("message", response.data.data.response)
+
+    setMessages([
+      ...messages,
+      { sender: "user", chat: message },
+      { sender: "model", chat: response.data.data.response },
+    ]);
+
+    setMessage("");
+  };
+
+  //get old chat
+
+  const getOldChat = async (req, res) => {
+    const response = await axios.get(
+      `http://localhost:8000/chat/chatHistory/${id}`,
+      {
+        withCredentials: true,
+      }
+    );
+
+    console.log("old chat:", response.data.data);
+
+    setOldChat(response.data.data);
+  };
+
+  useEffect(() => {
+    if (id) {
+      getOldChat();
+    }
+  }, [sessionId]);
+
+
+  //copy to clipboard handle
+
+  const copyToClipboard = (item,code, index)=>{
+   
+  
+    navigator.clipboard.writeText(item)
+    .then(() =>{
+      setCopiedIndex(index)
+
+      setTimeout(()=>{
+        setCopiedIndex(null)
+      }, 2000)
+    })
+    .catch(err =>{
+      console.log("error tp copy text")
+    })
+  }
+
+
+
+   
   return (
-    <div
-      id="pdfContainer"
-      className=" bg-amber-300 overflow-y-auto  h-screen lg:flex lg:flex-col border border-gray-300 rounded-lg p-4"
-    >
-      <div className=" mb-4">
-        {messages.map((item, index) => (
-          <div
-            key={index}
-            className={` ${
-              item.sender === "model"
-                ? "flex justify-start w-fit"
-                : "flex justify-end"
-            }   mb-2`}
+    <>
+      <div className=" bg-slate-900 lg:h-screen lg:w-full overflow-auto flex flex-col">
+        <div className=" h-[75%] overflow-y-auto">
+          {id && (
+            <div className="lg:h-fit w-full">
+              {oldChat?.map((item, index) => (
+                <div
+                  key={index}
+                  className={` ${
+                    item.sender === "model"
+                      ? "flex justify-start"
+                      : "flex justify-end"
+                  }  p-2 rounded-md`}
+                >
+                  <p className=" bg-emerald-600 rounded-md p-2">
+                  
+{/* markDown goes here */}
+                    {/* {item.message} */}
+
+
+                    <Markdown
+    children={item.message}
+    components={{
+      code(props) {
+        const {children, className, node, ...rest} = props
+        const match = /language-(\w+)/.exec(className || '')
+        
+        return match ? (
+          <div className="">
+          <SyntaxHighlighter
+          
+            {...rest}
+            PreTag="div"
+            children={String(children).replace(/\n$/, '')}
+            language={match[1]}
+            style={dark}
+            
           >
-            {item.sender === 'model' && (<div> 
-             <div className=" hidden" id="text" ref={copyRef}> <Markdown>{item.message}</Markdown> </div>
-            </div>)}
-
-            <div className=" overflow-auto text-center items-center p-1 bg-white text-black rounded-lg">
-              {/* <p className="">{item.message}</p> */}
-
-              <Markdown
-                children={item.message}
-                components={{
-                  code(props) {
-                    const { children, className, node, ...rest } = props;
-                    const match = /language-(\w+)/.exec(className || "");
-                    const codeString = String(children).replace(/\n$/, "");
-
-                    return match ? (
-                      <div >
-                        {/* //for copying code */}
-                        <CopyToClipboard text={codeString} onCopy={handleCopy}>
-                          <button className=" bg-emerald-500">Copy</button>
-                        </CopyToClipboard>
-
-                        <SyntaxHighlighter
-                          {...rest}
-                          PreTag="div"
-                          //children={String(children).replace(/\n$/, '')}
-                          language={match[1]}
-                          style={dark}
-                        >
-                          {codeString}
-                        </SyntaxHighlighter>
-                      </div>
-                    ) : (
-                      <code {...rest} className={className}>
-                        {children}
-                      </code>
-                    );
-                  },
-                }}
-              />
+            {String(children).trim()}
+             </SyntaxHighlighter>
+             { item.sender === "model" && <div className=" flex justify-end top-0 right-0">
+            <button onClick={()=> copyToClipboard(String(children).trim(), 'code', index)} className="w-14 h-6 bg-green-500 rounded-md  right-0">{copiedIndex === index ? "Copied" : "Code"}</button>
             </div>
-        {
-          item.sender === 'model' && (<button onClick={handleCopyText}>Copy</button>)
-        }
-          </div>
-        ))}
-      </div>
-      {copyStatus && (
-        <span className=" justify-center items-center flex bg-slate-500 h-8 rounded-md shadow-md w-20  translate-y-6 bottom-10 right-4 fixed">
-          <h2>Copied</h2>
-        </span>
-      )}
+          }
+           </div>
+        ) : (
+          <code {...rest} className={className}>
+         
+            {children}
+          </code>
+        )
+       
+      }
+      
+    }}
+    
+  />
 
-      {messages.length >= 4 && (
-        <button
-          onClick={generatePdf}
-          className=" z-10 bg-slate-600 w-fit p-2 rounded-full"
-        >
-          PDF
-        </button>
-      )}
-      <Prompt receivedCode={getResponse} />
-    </div>
+
+{/* markdown ends here */}
+
+{/* copy text button */}
+
+{ item.sender === "model" && <div className=" flex justify-end right-0">
+<CopyToClipboard text={item.message}><button   className="w-14 h-6 bg-yellow-500 rounded-md  right-0">Copy</button></CopyToClipboard>
+</div>
+
+}
+
+
+                  </p>
+                 
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className=" lg:h-fit w-full mb-20">
+            {messages?.map((item, index) => (
+              <div
+                key={index}
+                className={`${
+                  item.sender === "model"
+                    ? "flex justify-start"
+                    : "flex justify-end"
+                }  p-2 rounded-md`}
+              >
+                <p className=" bg-emerald-600 rounded-md p-2">{item.chat}
+                  
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-center items-center bottom-10 rounded-md lg:min-h-24 lg:w-full overflow-hidden ">
+          <form
+            className=" bg-blue-500 rounded-sm p-1 flex justify-around items-center lg:w-1/2"
+            onSubmit={handleQueryBtn}
+          >
+            <textarea
+              className=" outline-none line-clamp-3  m-2 p-3 w-10/12 overflow-y-auto bg-blue-500 text-black"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Your Query"
+            ></textarea>
+            <button className=" bg-amber-600 h-fit w-fit p-2 rounded-md">
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+    </>
   );
 }

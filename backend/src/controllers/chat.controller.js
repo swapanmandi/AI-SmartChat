@@ -51,7 +51,7 @@ const chatGenerate = asyncHandler(async (req, res) => {
 // endpoint to fetch chat history
 
 const getMessages = asyncHandler(async (req, res) => {
-  const { sessionId: sessionId } = req.params;
+  const { id: sessionId } = req.params;
   const chatSession = await Message.findOne({ sessionId });
 
   if (!chatSession) {
@@ -68,25 +68,40 @@ const getMessages = asyncHandler(async (req, res) => {
 // get chat List
 
 const getChatList = asyncHandler(async (req, res) => {
-
- 
-  const chatList = await Message.find({}, 'sessionId')
+  const chatList = await Message.find({}, "sessionId");
 
   if (!chatList) {
     throw new ApiError(400, "there is chat list");
   }
 
-  res
-  .status(200)
-  .json(
-      new ApiResponse(
-        200,
-        { list: chatList },
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      { list: chatList },
 
-        "Chat list got successfully!"
-      )
+      "Chat list got successfully!"
     )
-  
+  );
 });
 
-export { chatGenerate, getMessages, getChatList };
+// delete chat
+
+const deleteChat = asyncHandler(async (req, res) => {
+  try {
+    const { id: uuid} = req.params;
+
+    //console.log("id:", uuid);
+
+    const result = await Message.deleteOne({ _id: uuid });
+
+    if (result.deletedCount === 0) {
+      throw new ApiError(400, "cant findchat");
+    }
+
+    res.status(200).json(new ApiResponse(200, {}, "chat deleted successfully"));
+  } catch (error) {
+    throw new ApiError(500, "error to delete.", error);
+  }
+});
+
+export { chatGenerate, getMessages, getChatList, deleteChat };

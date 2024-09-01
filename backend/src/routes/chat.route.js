@@ -7,7 +7,7 @@ const router = Router()
 
 router.use(verifyJWT)
 
-router.route("/generateChat").post(chatGenerate)
+router.route("/generateChat/:id").post(chatGenerate)
 router.route("/chatHistory/:id").get(getMessages)
 router.route("/chatList").get(getChatList)
 router.route("/deleteChat/:id").delete(deleteChat)

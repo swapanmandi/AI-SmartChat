@@ -1,37 +1,24 @@
-// import mongoose from "mongoose";
-
-// const messageModel = new mongoose.Schema({
-//     participants:[{
-//         type: mongoose.Schema.Types.ObjectId,
-//         ref: "User"
-//     }],
-//     messages:[{
-//         type: mongoose.Schema.Types.ObjectId,
-//         ref: "Chat"
-//     }]
-// })
-
-// export const Message = mongoose.model("Message", messageModel)
-
 import mongoose from "mongoose";
 
 const messageModel = new mongoose.Schema({
-    sessionId:{
+  roomId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Room",
+  },
+  messages: [
+    {
+      senderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+   
+      message: {
         type: String,
-        required: true
+        required: true,
+      },
     },
-    messages:[{
-        sender:{
-            type: String,
-            required: true
-        },
-        message:{
-            type: String,
-            required: true
-        }
-    }]
-},{
-    timestamps: true
-})
+  ],
+}, {timestamps: true});
 
-export const Message = mongoose.model("Message", messageModel)
+export const Message = mongoose.model("Message", messageModel);

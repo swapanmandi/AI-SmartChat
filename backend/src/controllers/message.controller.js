@@ -176,5 +176,41 @@ const getMessages = asyncHandler(async (req, res) => {
 });
 
 
+// delete messages
 
-export { sendMessage, getMessages };
+const deleteMessages = asyncHandler(async(req, res) =>{
+  const {chatId, messageId} = req.params
+
+  const chat = await Chat.findOne({
+    _id: chatId,
+    participants: req.user?._id
+  })
+
+  if(!chat){
+    throw new ApiError(404, "Chat does not exist")
+  }
+
+  const message = await Message.findOne({
+    _id: messageId
+  })
+
+  if(!message){
+    throw new ApiError(404, "Message does not exist")
+  }
+
+  if(message.sender !== req.user?._id){
+throw new ApiError(403, "You are not a sender")
+  }
+
+  await Message.deleteOne({
+    _id: messageId
+  })
+
+chat.participants.forEach(item => {
+  emitSocketEvent(req, item.toString(), "messageDelete", message)
+})
+
+return res.status(200).json(new ApiResponse(200, message, "Message Delete Successfully"))
+})
+
+export { sendMessage, getMessages, deleteMessages };

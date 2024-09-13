@@ -198,7 +198,8 @@ const deleteMessages = asyncHandler(async(req, res) =>{
     throw new ApiError(404, "Message does not exist")
   }
 
-  if(message.sender !== req.user?._id){
+ 
+  if(message.sender.toString() !== req.user?._id.toString()){
 throw new ApiError(403, "You are not a sender")
   }
 

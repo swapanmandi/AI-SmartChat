@@ -79,9 +79,12 @@ const messageCommonAggregation = () => {
   ];
 };
 
+
+//send messages
+
 const sendMessage = asyncHandler(async (req, res) => {
   const { id: chatId } = req.params;
-  console.log("chatid", chatId)
+  console.log("chatid", chatId);
   const { content } = req.body;
 
   if (!content) {
@@ -93,7 +96,7 @@ const sendMessage = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Chat does not exist.");
   }
 
-  console.log("userid", req.user?._id.toString())
+  console.log("userid", req.user?._id.toString());
   const message = await Message.create({
     sender: req.user?._id,
     content: content || "",
@@ -128,7 +131,7 @@ const sendMessage = asyncHandler(async (req, res) => {
   }
 
   chat.participants.forEach((item) => {
-    if (item.toString() === req.user?._id.toString()) return;
+    //if (item.toString() === req.user?._id.toString()) return;
 
     emitSocketEvent(req, item.toString(), "messageReceived", receivedMessage);
   });
@@ -138,4 +141,40 @@ const sendMessage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, receivedMessage, "Message saved successfully"));
 });
 
-export { sendMessage };
+
+//get messages
+
+const getMessages = asyncHandler(async (req, res) => {
+  const { id: chatId } = req.params;
+
+  const selectedChat = await Chat.findById(chatId);
+  if (!selectedChat) {
+    throw new ApiError(404, "Chat does not exist");
+  }
+
+  if (!(selectedChat.participants?.includes(req.user?._id))) {
+    throw new ApiError(400, "You are not a part of this chat");
+  }
+
+  const messages = await Message.aggregate([
+    {
+      $match: {
+        chat: new mongoose.Types.ObjectId(chatId),
+      },
+    },
+    ...messageCommonAggregation(),
+    {
+      $sort: {
+        createdAt: 1,
+      },
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, messages, "All Messages Fetched Successfully"));
+});
+
+
+
+export { sendMessage, getMessages };

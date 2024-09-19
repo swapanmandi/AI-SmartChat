@@ -159,107 +159,258 @@ const commonChatAggregation = () => {
   ];
 };
 
-
-
-const getChatUsers = asyncHandler(async(req, res) =>{
-
+const getChatUsers = asyncHandler(async (req, res) => {
   const users = await User.aggregate([
     {
       $match: {
-       _id: {
-        $ne : req.user?._id
-       }
-      }
+        _id: {
+          $ne: req.user?._id,
+        },
+      },
     },
     {
       $project: {
         fullName: 1,
         email: 1,
-      }
-    }
-  ])
+      },
+    },
+  ]);
 
-  return res.status(200).json(new ApiResponse(200, users, "Fetched All Chat Users Successfully"))
-})
-
-
-
-
-const createOrGetOneOnOneChat = asyncHandler(async(req, res) =>{
-  const {id: receiverId} = req.params
-
-  const receiver = await User.findById(receiverId)
-
-  if(!receiver){
-    throw new ApiError(404, "Receiver does not exist.")
-  }
-
-  if(req.user?._id === receiver){
-    throw new ApiError(400, "You cant chat yourself")
-  }
-
-const chat = await Chat.aggregate([
-  {$match:{
-isRoomChat: false,
-$and : [
-  {
-    participants: {
-      $elemMatch: {
-        $eq: new mongoose.Types.ObjectId(req.user?._id)
-      }
-    }
-  },
-  {
-    participants: {
-      $elemMatch: {
-        $eq: new mongoose.Types.ObjectId(receiverId)
-      }
-    }
-  }
-]
-  }},
-
-  ...commonChatAggregation()
-
-])
-
-if(chat.length){
-  return res.status(200).json(new ApiResponse(200, chat[0], "Chat retrived successfully"))
-}
-
-
-const newChatInstanse = await Chat.create({
-  participants: [req.user?._id, new mongoose.Types.ObjectId(receiverId)]
-})
-
-const newChat = await Chat.aggregate([
-  {
-    $match: {
-      _id: newChatInstanse._id
-    }
-  },
-  ...commonChatAggregation()
-])
-
-const payload = newChat[0]
-
-if(!payload){
-  throw new ApiError(500, "Internal Server Error")
-}
-
-
-payload?.participants?.forEach(element => {
-  if(element._id.toString() === req.user?._id.toString()) return
-
-  emitSocketEvent(req, element._id.toString(), "newChat", payload)
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "Fetched All Chat Users Successfully"));
 });
 
+const createOrGetOneOnOneChat = asyncHandler(async (req, res) => {
+  const { id: receiverId } = req.params;
 
-return res.status(200).json( new ApiResponse(200, payload, "Chat Retrived Sussessfully"))
+  const receiver = await User.findById(receiverId);
 
-})
+  if (!receiver) {
+    throw new ApiError(404, "Receiver does not exist.");
+  }
 
+  if (req.user?._id === receiver) {
+    throw new ApiError(400, "You cant chat yourself");
+  }
 
+  const chat = await Chat.aggregate([
+    {
+      $match: {
+        isRoomChat: false,
+        $and: [
+          {
+            participants: {
+              $elemMatch: {
+                $eq: new mongoose.Types.ObjectId(req.user?._id),
+              },
+            },
+          },
+          {
+            participants: {
+              $elemMatch: {
+                $eq: new mongoose.Types.ObjectId(receiverId),
+              },
+            },
+          },
+        ],
+      },
+    },
 
+    ...commonChatAggregation(),
+  ]);
 
-export {getChatUsers, createOrGetOneOnOneChat}
+  if (chat.length) {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, chat[0], "Chat retrived successfully"));
+  }
+
+  const newChatInstanse = await Chat.create({
+    participants: [req.user?._id, new mongoose.Types.ObjectId(receiverId)],
+  });
+
+  const newChat = await Chat.aggregate([
+    {
+      $match: {
+        _id: newChatInstanse._id,
+      },
+    },
+    ...commonChatAggregation(),
+  ]);
+
+  const payload = newChat[0];
+
+  if (!payload) {
+    throw new ApiError(500, "Internal Server Error");
+  }
+
+  payload?.participants?.forEach((element) => {
+    if (element._id.toString() === req.user?._id.toString()) return;
+
+    emitSocketEvent(req, element._id.toString(), "newChat", payload);
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, payload, "Chat Retrived Sussessfully"));
+});
+
+//create Room Chat
+
+const createRoomChat = asyncHandler(async (req, res) => {
+  const { name, participants } = req.body;
+  if (!name) {
+    throw new ApiError(400, "Room Name is Required");
+  }
+
+  if (participants.includes(req.user?._id)) {
+    throw new ApiError(400, "You are add yourself, You will be the admin");
+  }
+
+  const members = [...new Set([...participants, req.user?._id.toString()])];
+
+  if (members.length < 2) {
+    throw new ApiError(400, "You must add atleast 1 friend");
+  }
+
+  const roomChat = await Chat.create({
+    name,
+    isRoomChat: true,
+    participants: members,
+    admin: req.user?._id,
+  });
+
+  const chat = await Chat.aggregate([
+    {
+      $match: {
+        _id: roomChat._id,
+      },
+    },
+    ...commonChatAggregation(),
+  ]);
+
+  const payload = chat[0];
+
+  if (!payload) {
+    throw new ApiError(500, "Internal server error");
+  }
+
+  payload.participants.forEach((item) => {
+    if (item._id.toString() === req.user?._id.toString()) return;
+
+    emitSocketEvent(req, item._id, "newChat", payload);
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, payload, "Room Created successfully"));
+});
+
+// get all chats
+const getAllChats = asyncHandler(async (req, res) => {
+  const chats = await Chat.aggregate([
+    {
+      $match: {
+        participants: {
+          $elemMatch: {
+            $eq: req.user?._id,
+          },
+        },
+      },
+    },
+    ...commonChatAggregation(),
+  ]);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, chats, "All Chats fetched successfully"));
+});
+
+//get rommChat details
+
+const getRoomChatDetails = asyncHandler(async (req, res) => {
+  const { id: chatId } = req.params;
+
+  const roomChat = await Chat.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(chatId),
+        isRoomChat: true,
+      },
+    },
+    ...commonChatAggregation(),
+  ]);
+
+  const chat = roomChat[0];
+  if (!chat) {
+    throw new ApiError(404, "Rom Chat does not exist");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, chat, "Room Chat Details fetched successfully"));
+});
+
+// rename room name
+
+const renameRoomName = asyncHandler(async (req, res) => {
+  const { id: chatId } = req.params;
+  const { name } = req.body;
+
+  const roomChat = await Chat.findOne({
+    _id: chatId,
+    isRoomChat: true,
+  });
+
+  if (!roomChat) {
+    throw new ApiError(404, "Room Chat does not exist");
+  }
+
+  if (roomChat.admin?.toString() !== req.user?._id.toString()) {
+    throw new ApiError(404, "You are not a admin");
+  }
+
+  const renamedRoomName = await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      $set: {
+        name,
+      },
+    },
+    { new: true }
+  );
+  const chat = await Chat.aggregate([
+    {
+      $match: {
+        _id: renamedRoomName._id,
+      },
+    },
+    ...commonChatAggregation(),
+  ]);
+
+  const payload = chat[0];
+
+  if (!payload) {
+    throw new ApiError(500, "Error to rename room name- internal server error");
+  }
+
+  payload?.participants.forEach((user) => {
+    emitSocketEvent(req, user._id.toString(), "renamedRoomName", payload);
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, payload, "Room Chat Name Changed Successfully"));
+});
+
+export {
+  getChatUsers,
+  createOrGetOneOnOneChat,
+  createRoomChat,
+  getAllChats,
+  getRoomChatDetails,
+  renameRoomName,
+  // addParticipantToRoomChat,
+  // removeParticipantFromRoomChat,
+  // deleteChat,
+};

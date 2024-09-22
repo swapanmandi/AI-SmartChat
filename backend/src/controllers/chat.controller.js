@@ -403,6 +403,177 @@ const renameRoomName = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, payload, "Room Chat Name Changed Successfully"));
 });
 
+//add participant
+
+const addParticipantToRoomChat = asyncHandler(async (req, res) => {
+  const { chatId, participantId } = req.body;
+  console.log(req.body)
+
+  const roomChat = await Chat.findOne({ _id: chatId, isRoomChat: true });
+  if (!roomChat) {
+    throw new ApiError(404, "Room Chat does not exist");
+  }
+
+  if (roomChat.admin?.toString() !== req.user?._id.toString()) {
+    throw new ApiError(400, "You are not a admin");
+  }
+
+  const existedParticipants = roomChat.participants;
+
+  if (existedParticipants.includes(participantId)) {
+    throw new ApiError(409, "User is already in room");
+  }
+
+  const updatedChat = await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      $push: {
+        participants: participantId,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  const chat = await Chat.aggregate([
+    {
+      $match: {
+        _id: updatedChat._id,
+      },
+    },
+    ...commonChatAggregation(),
+  ]);
+
+  const payload = chat[0];
+
+  if (!payload) {
+    throw new ApiError(500, "Error to add user to room- internal server error");
+  }
+
+  emitSocketEvent(req, participantId, "newChat", payload);
+
+  return res.status(200).json(new ApiResponse(200, payload, "User add to room successfully."));
+});
+
+//remove participant fron room
+
+const removeParticipantFromRoomChat = asyncHandler(async(req, res) =>{
+
+  const {chatId, participantId} = req.body
+
+  const roomChat = await Chat.findOne({_id: chatId, isRoomChat: true})
+
+  if(!roomChat)
+  {
+    throw new ApiError(404, "Room Chat does not exist")
+  }
+
+  if(roomChat?.admin.toString() !== req.user?._id.toString()){
+    throw new ApiError(409, "You are not a admin")
+  }
+
+  const existedChat = roomChat.participants
+
+  if(!existedChat.includes(participantId)){
+    throw new ApiError(404, "User does not exist in room")
+  }
+
+  const updatedChat = await Chat.findByIdAndUpdate(chatId, {
+    $pull:{
+      participants: participantId
+    }
+  }, {
+    new: true
+  })
+
+  const chat = await Chat.aggregate([
+    {
+      $match: {
+        _id: updatedChat?._id
+      }
+    },
+    ...commonChatAggregation()
+  ])
+
+  const payload = chat[0]
+
+  if(!payload){
+    throw new ApiError(500, "error to remove - internal server error")
+  }
+
+  emitSocketEvent(req, participantId, "leaveChat", payload)
+
+  return res.status(200).json(new ApiResponse(200, payload, "User removed successfully"))
+})
+
+//delete room
+const deleteRoomChat = asyncHandler(async(req, res) =>{
+  const {id:chatId} = req.params
+
+const chat = await Chat.aggregate([
+  {
+    $match: {
+      _id: new mongoose.Types.ObjectId(chatId),
+      isRoomChat: true
+    }
+  },
+  ...commonChatAggregation()
+])
+
+const payload = chat[0]
+
+if(!payload){
+  throw new ApiError(404, "The Room does not exist.")
+}
+
+if(payload.admin?.toString() !== req.user?._id.toString()){
+  throw new ApiError(409, "You are not a admin")
+}
+
+await Chat.findByIdAndDelete(chatId)
+
+payload?.participants.forEach(item => {
+
+  if(item._id.toString() === req.user?._id.toString()) return
+
+  emitSocketEvent(req, item._id, "leaveChat", payload)
+
+})
+return res.status(200).json(new ApiResponse(200, {}, "Room deleted successfully"))
+})
+
+
+const deleteOneOnOneChat = asyncHandler(async(req, res) =>{
+
+  const {id: chatId} = req.params
+
+  const chat = await Chat.aggregate([
+    {
+      $match:{
+        _id: new mongoose.Types.ObjectId(chatId)
+      }
+    },
+    ...commonChatAggregation()
+  ])
+
+  const payload = chat[0]
+
+  if(!payload){
+    throw new ApiError(404, "Chat does not exist")
+  }
+
+  await Chat.findByIdAndDelete(chatId)
+
+  const otherParticipants = payload.participants?.find(item => item._id.toString() !== req.user?._id.toString())
+
+  emitSocketEvent(req, otherParticipants._id, "leaveChat", payload)
+
+
+  return res.status(200).json(new ApiResponse(200, {}, "Chat deleted successfully"))
+
+})
+
 export {
   getChatUsers,
   createOrGetOneOnOneChat,
@@ -410,7 +581,8 @@ export {
   getAllChats,
   getRoomChatDetails,
   renameRoomName,
-  // addParticipantToRoomChat,
-  // removeParticipantFromRoomChat,
-  // deleteChat,
+  addParticipantToRoomChat,
+  removeParticipantFromRoomChat,
+  deleteRoomChat,
+  deleteOneOnOneChat
 };

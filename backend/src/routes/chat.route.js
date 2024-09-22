@@ -6,6 +6,10 @@ import {
   getAllChats,
   getRoomChatDetails,
   renameRoomName,
+  addParticipantToRoomChat,
+  removeParticipantFromRoomChat,
+  deleteRoomChat,
+  deleteOneOnOneChat,
 
 } from "../controllers/chat.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -25,6 +29,12 @@ router.route("/create-roomchat").post(verifyJWT, createRoomChat);
 router.route("/chats").get(verifyJWT, getAllChats);
 router.route("/room-info/:id").get(verifyJWT, getRoomChatDetails)
 router.route("/rename-room/:id").patch(verifyJWT, renameRoomName)
+router.route("/add-participant").patch(verifyJWT, addParticipantToRoomChat)
+router.route("/remove-participant").patch(verifyJWT, removeParticipantFromRoomChat)
+router.route("/delete-room/:id").delete(verifyJWT, deleteRoomChat)
+router.route("/delete-chat/:id").delete(verifyJWT, deleteOneOnOneChat)
+
+
 
 
 export default router;

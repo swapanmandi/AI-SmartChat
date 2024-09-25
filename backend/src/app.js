@@ -46,9 +46,9 @@ app.use(
 app.use(cookieParser());
 
 //route declarations
-app.use("api/v1/chat-app/users", userRouter);
-app.use("api/v1//chat-app/chats", chatRouter);
-app.use("api/v1/chat-app/messages", messageRouter);
+app.use("/api/v1/chat-app/users", userRouter);
+app.use("/api/v1//chat-app/chats", chatRouter);
+app.use("/api/v1/chat-app/messages", messageRouter);
 app.use("/room", roomRouter, aiRoomMessageRouter);
 
 export { server };

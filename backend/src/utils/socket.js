@@ -11,6 +11,13 @@ const mountJoinChatEvent = (socket) => {
   });
 };
 
+const mountJoinAiChatEvent = (socket) => {
+  socket.on("joinAiChat", (aiChatId) => {
+    socket.join(aiChatId);
+    console.log(`${aiChatId} is opened for ai chat`)
+  });
+};
+
 const mountTypingEvent = (socket) => {
   socket.on("typing", (chatId) => {
     socket.in(chatId).emit("typing", chatId);
@@ -58,6 +65,7 @@ const initializeSocketIO = (io) => {
       });
 
       mountJoinChatEvent(socket);
+      mountJoinAiChatEvent(socket)
       mountTypingEvent(socket);
       mountStoppedTypingEvent(socket);
 
@@ -78,8 +86,8 @@ const initializeSocketIO = (io) => {
 
 };
 
-const emitSocketEvent = (req, roomId, event, payload) => {
-  req.app.get("io").in(roomId).emit(event, payload);
+const emitSocketEvent = (req, userId, event, payload) => {
+  req.app.get("io").in(userId).emit(event, payload);
 };
 
 export { emitSocketEvent, initializeSocketIO };

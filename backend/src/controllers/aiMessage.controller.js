@@ -6,6 +6,7 @@ import { AiMessage } from "../models/aiMessage.model.js";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import mongoose from "mongoose";
+import { emitSocketEvent } from "../utils/socket.js";
 
 const commonAiMessageAggregation = () => {
   return [
@@ -84,16 +85,24 @@ const createAiChat = asyncHandler(async (req, res) => {
     const text = result.response.text();
 
    
-    await AiMessage.create({
+    const sendQuery = await AiMessage.create({
       aiChat: aiChatId,
       sender: { role: "user", user: req.user?._id },
       content: query,
     });
-    await AiMessage.create({
+    const queryResult = await AiMessage.create({
       aiChat: aiChatId,
       sender: { role: "model", user: null },
       content: text,
     });
+
+
+    existedAiChat.participants.forEach(item => {
+      emitSocketEvent(req, item.toString(), "receivedAiMessage", sendQuery)
+    })
+    existedAiChat.participants.forEach(item => {
+      emitSocketEvent(req, item.toString(), "receivedAiMessage", queryResult)
+    })
 
     return res
       .status(200)

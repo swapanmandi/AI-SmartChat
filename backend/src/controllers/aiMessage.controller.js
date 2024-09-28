@@ -69,7 +69,7 @@ const createAiChat = asyncHandler(async (req, res) => {
       },
       ...commonAiMessageAggregation(),
     ]);
-    console.log("CHAT HISTORY:", chatHistory)
+    //console.log("CHAT HISTORY:", chatHistory)
 
     const chat = model.startChat({
       history:
@@ -79,7 +79,7 @@ const createAiChat = asyncHandler(async (req, res) => {
         })) || [],
     });
     let result = await chat.sendMessage(query);
-    console.log(result.response.text());
+    //console.log(result.response.text());
     //result = await chat.sendMessage("How many paws are in my house?");
     const text = result.response.text();
 

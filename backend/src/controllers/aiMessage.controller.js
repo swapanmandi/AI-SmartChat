@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { AiMessage } from "../models/aiMessage.model.js";
+import {Message} from "../models/message.model.js"
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import mongoose from "mongoose";
@@ -43,14 +44,14 @@ const createAiChat = asyncHandler(async (req, res) => {
   
     const { id: aiChatId } = req.params;
     const { query } = req.body;
-    //console.log("query:", query)
+    console.log("query:", query)
 
     if (query === "") {
       throw new ApiError(400, "The query field is empty!");
     }
 
     let existedAiChat = await AiChat.findById(aiChatId);
-    console.log("existed chat", existedAiChat);
+    //console.log("existed chat", existedAiChat);
 
     if (!existedAiChat) {
       throw new ApiError(404, "Chat does not exis");
@@ -61,21 +62,27 @@ const createAiChat = asyncHandler(async (req, res) => {
       throw new ApiError(409, "You are not in this chat")
     }
 
+    const chatId = existedAiChat.chat;
+
+
    //await AiMessage.findOne({ aiChat: aiChatId });
-   const chatHistory = await AiMessage.aggregate([
-      {
-        $match: {
-          aiChat: new mongoose.Types.ObjectId(aiChatId),
-        },
-      },
-      ...commonAiMessageAggregation(),
-    ]);
-    //console.log("CHAT HISTORY:", chatHistory)
+  //  const chatHistory = await AiMessage.aggregate([
+  //     {
+  //       $match: {
+  //         aiChat: new mongoose.Types.ObjectId(aiChatId),
+  //       },
+  //     },
+  //     ...commonAiMessageAggregation(),
+  //   ]);
+
+  const chatHistory = await Message.find({chat:chatId})
+    console.log("CHAT HISTORY:", chatHistory)
 
     const chat = model.startChat({
       history:
         chatHistory?.map((item) => ({
-          role: item.sender?.role ? "user" : "model",
+          //role: item.sender?.role ? "user" : "model",
+          role: item.sender?._id.toString() ? "user" : "model",
           parts: [{ text: item.content }],
         })) || [],
     });
@@ -90,6 +97,8 @@ const createAiChat = asyncHandler(async (req, res) => {
       sender: { role: "user", user: req.user?._id },
       content: query,
     });
+
+
     const queryResult = await AiMessage.create({
       aiChat: aiChatId,
       sender: { role: "model", user: null },
@@ -141,22 +150,3 @@ const getAiMessages = asyncHandler(async (req, res) => {
 });
 
 export { createAiChat, getAiMessages };
-
-
-
-//const sender = req.user?._id;
-
-    //if (existedAiChat) {
-    // existedAiChat.messages.push({ sender, query });
-    // existedAiChat.messages.push({ sender: null, query: text });
-    // await existedAiChat.save();
-    //   await AiMessage.create({})
-    // } else {
-    //   existedAiChat = await AiChat.create({
-    //     aiChatId,
-    //     messages: [
-    //       { sender, query },
-    //       { sender: null, query: text },
-    //     ],
-    //   });
-    // }

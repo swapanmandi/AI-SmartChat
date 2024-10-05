@@ -6,7 +6,7 @@ export default function Input({
   onChange,
   placeholder,
   disabled,
-  onKeyDown
+  onKeyDown,
 }) {
   return (
     <div className=" h-[10%] flex justify-center items-center rounded-md ">

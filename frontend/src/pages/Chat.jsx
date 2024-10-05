@@ -12,18 +12,18 @@ export default function Chat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isClickedChatInfo,setIsClickedChatInfo] = useState(false);
+  const [isClickedChatInfo, setIsClickedChatInfo] = useState(false);
   const [roomInfo, setRoomInfo] = useState(null);
   const [isClickedAiChat, setIsClickedAiChat] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
- 
+
   const [participantId, setParticipantId] = useState("");
   const [isClickedOnAddUser, setIsClickedOnAddUser] = useState(false);
   const [addUser, setAddUser] = useState("");
   const [oneOnOneChatInfo, setOneOnOneChatInfo] = useState(null);
   const [aiChatId, setAiChatId] = useState("");
   const [aiMessages, setAiMessages] = useState([]);
- 
+
   const [query, setQuery] = useState("");
   const [chatQuery, setChatQuery] = useState("");
   const { userList, getUserList } = useUser();
@@ -35,7 +35,6 @@ export default function Chat() {
   //console.log(messages)
   const navigate = useNavigate();
   const socket = useSocket();
-
 
   const copyRef = useRef();
 
@@ -140,7 +139,6 @@ export default function Chat() {
     } else setQuery("");
   }, [chatQuery]);
 
-
   useEffect(() => {
     if (cid) {
       createChat();
@@ -176,7 +174,7 @@ export default function Chat() {
   });
 
   const clickedChatInfo = () => {
-  setIsClickedChatInfo(!isClickedChatInfo);
+    setIsClickedChatInfo(!isClickedChatInfo);
 
     const getRoomInfo = async () => {
       try {
@@ -244,7 +242,7 @@ export default function Chat() {
       { withCredentials: true }
     );
     navigate("/app");
-  setIsClickedChatInfo(false);
+    setIsClickedChatInfo(false);
   };
 
   const sendQuery = async (e) => {
@@ -288,8 +286,6 @@ export default function Chat() {
     setIsClickedAiChat(true);
   };
 
- 
-
   // delete message
   const deleteMessage = async (mid) => {
     axios.delete(
@@ -308,10 +304,9 @@ export default function Chat() {
     getAiChatMessages();
   }, [aiChatId]);
 
-
   //console.log("ai msg", aiMessages);
 
-  console.log("query:",query);
+  console.log("query:", query);
 
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
@@ -319,7 +314,6 @@ export default function Chat() {
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
   };
- 
 
   const handleRenameRoom = async (e) => {
     e.preventDefault();
@@ -331,61 +325,57 @@ export default function Chat() {
     setIsRenameRoom(false);
   };
 
-const handleDeleteRoom = async () => {
-  await axios.delete(
-    `${import.meta.env.VITE_BACKEND_API}/chats/delete-room/${cid}`,
-    { withCredentials: true }
-  );
-};
+  const handleDeleteRoom = async () => {
+    await axios.delete(
+      `${import.meta.env.VITE_BACKEND_API}/chats/delete-room/${cid}`,
+      { withCredentials: true }
+    );
+  };
 
- 
-
-const RemoveUser = async (userId) => {
-  await axios.patch(
-    `${import.meta.env.VITE_BACKEND_API}/chats/remove-participant`,
-    { cid: cid, participantId: userId },
-    { withCredentials: true }
-  );
- 
-};
-
+  const RemoveUser = async (userId) => {
+    await axios.patch(
+      `${import.meta.env.VITE_BACKEND_API}/chats/remove-participant`,
+      { cid: cid, participantId: userId },
+      { withCredentials: true }
+    );
+  };
 
   return (
     <div className=" h-svh w-svw bg-slate-900">
-        <ChatHeader clickedChat={clickedChat} isClickedAiChat={isClickedAiChat} clickedAiChat ={clickedAiChat} clickedChatInfo={clickedChatInfo}
-          oneOnOneChatInfo={oneOnOneChatInfo}
-         handleDeleteOnOneChat={handleDeleteOnOneChat}
-         isClickedChatInfo={isClickedChatInfo}
+      <ChatHeader
+        clickedChat={clickedChat}
+        isClickedAiChat={isClickedAiChat}
+        clickedAiChat={clickedAiChat}
+        clickedChatInfo={clickedChatInfo}
+        oneOnOneChatInfo={oneOnOneChatInfo}
+        handleDeleteOnOneChat={handleDeleteOnOneChat}
+        isClickedChatInfo={isClickedChatInfo}
         roomInfo={roomInfo}
         rid={rid}
         cid={cid}
         RemoveUser={RemoveUser}
         handleDeleteRoom={handleDeleteRoom}
         handleRenameRoom={handleRenameRoom}
-        />
+      />
 
       <div>
         {!isClickedAiChat ? (
           <div className=" h-svh">
             <ChatDisplay
-        
-        isClickedAiChat={isClickedAiChat}
-        clickedChat={clickedChat}
-        
-        clickedAiChat={clickedAiChat}
-    
-        editingRoomName={editingRoomName}
-        ClickedonAddUser={ClickedonAddUser}
-       
-        isClickedOnAddUser={isClickedOnAddUser}
-        handleInputChange={handleInputChange}
-        setIsClickedOnAddUser={setIsClickedOnAddUser}
-        handleAddUser={handleAddUser}
-        handleChatQuery={handleChatQuery}
-        deleteMessage={deleteMessage}
-        loading={loading}
-        messages={messages}
-      />
+              isClickedAiChat={isClickedAiChat}
+              clickedChat={clickedChat}
+              clickedAiChat={clickedAiChat}
+              editingRoomName={editingRoomName}
+              ClickedonAddUser={ClickedonAddUser}
+              isClickedOnAddUser={isClickedOnAddUser}
+              handleInputChange={handleInputChange}
+              setIsClickedOnAddUser={setIsClickedOnAddUser}
+              handleAddUser={handleAddUser}
+              handleChatQuery={handleChatQuery}
+              deleteMessage={deleteMessage}
+              loading={loading}
+              messages={messages}
+            />
             <Input
               value={message}
               onChange={handleMessageChange}
@@ -396,12 +386,11 @@ const RemoveUser = async (userId) => {
           </div>
         ) : (
           <div className=" h-svh">
-            <ChatDisplay 
-            deleteMessage={deleteMessage}
-            setIsClickedAiChat={setIsClickedAiChat}
-            
-            loading={loading}
-            messages={aiMessages}
+            <ChatDisplay
+              deleteMessage={deleteMessage}
+              setIsClickedAiChat={setIsClickedAiChat}
+              loading={loading}
+              messages={aiMessages}
             />
 
             <Input

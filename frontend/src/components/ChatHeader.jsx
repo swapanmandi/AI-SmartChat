@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../store/AuthContext.jsx";
 import { useUser } from "../store/UserContext.jsx";
@@ -7,7 +7,6 @@ export default function ChatHeader({
   clickedChat,
   clickedAiChat,
   isClickedAiChat,
-  isClickedChatInfo,
   clickedChatInfo,
   roomInfo,
   editingRoomName,
@@ -20,18 +19,22 @@ export default function ChatHeader({
   handleDeleteOnOneChat,
   rid,
   RemoveUser,
-  handleDeleteRoom,
+  deleteRoom,
   handleRenameRoom,
+  typingUser,
+  isTyping,
 }) {
   const [isRenameRoom, setIsRenameRoom] = useState(false);
   const [viewParticipantModal, setViewParticipantModal] = useState(false);
+  const [participantId, setParticipantId] = useState("");
   const [newRoomName, setNewRoomName] = useState("");
-  const [isClickedChat, setIsClickedChat] = useState(false);
+  const [isClickedChatInfo, setIsClickedChatInfo] = useState(false);
+
   const { user } = useContext(AuthContext);
   const { userList, getUserList } = useUser();
 
-  const clickedOnParticipant = (cid) => {
-    setParticipantId(cid);
+  const clickedOnParticipant = (id) => {
+    setParticipantId(id);
     setViewParticipantModal(true);
   };
 
@@ -47,6 +50,37 @@ export default function ChatHeader({
     RemoveUser(id);
     setViewParticipantModal(false);
   };
+
+  const handleDeleteRoom = () => {
+    deleteRoom();
+    setIsClickedChatInfo(false);
+  };
+
+  const handleClickedChatInfo = () => {
+    setIsClickedChatInfo(!isClickedChatInfo);
+
+    clickedChatInfo();
+  };
+
+  const modalRef = useRef();
+  const handleClickOutsideModal = (e) => {
+    if (modalRef.current && !modalRef.current.contains(e.target)) {
+      setIsClickedChatInfo(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isClickedChatInfo) {
+      document.addEventListener("mousedown", handleClickOutsideModal);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutsideModal);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideModal);
+    };
+  }, [isClickedChatInfo]);
+
   return (
     <div className=" h-12 w-full">
       <div className=" h-full flex">
@@ -57,9 +91,18 @@ export default function ChatHeader({
           } h-full flex justify-around w-1/2 items-center`}
         >
           <div
-            onClick={clickedChatInfo}
+            onClick={handleClickedChatInfo}
             className=" h-10 w-10 rounded-full bg-slate-500 m-2"
+            ref={modalRef}
           ></div>
+          {isTyping &&
+            typingUser &&
+            typingUser?.map((item) => (
+              <span>
+                {item}
+                {`${typingUser.length > 1 ? " are" : " is"} Typing...`}
+              </span>
+            ))}
           <span className=" text-white font-bold"> Chat</span>
         </div>
         <div

@@ -12,18 +12,18 @@ export default function Chat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isClickedChatInfo, setIsClickedChatInfo] = useState(false);
+
   const [roomInfo, setRoomInfo] = useState(null);
   const [isClickedAiChat, setIsClickedAiChat] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-
-  const [participantId, setParticipantId] = useState("");
   const [isClickedOnAddUser, setIsClickedOnAddUser] = useState(false);
   const [addUser, setAddUser] = useState("");
   const [oneOnOneChatInfo, setOneOnOneChatInfo] = useState(null);
   const [aiChatId, setAiChatId] = useState("");
   const [aiMessages, setAiMessages] = useState([]);
-
+  const [isTyping, setIsTyping] = useState(false);
+  const [selfTyping, setSelfTyping] = useState(false);
+const [typingUser, setTypingUser] = useState([])
   const [query, setQuery] = useState("");
   const [chatQuery, setChatQuery] = useState("");
   const { userList, getUserList } = useUser();
@@ -37,6 +37,10 @@ export default function Chat() {
   const socket = useSocket();
 
   const copyRef = useRef();
+
+  const typingTimeoutRef = useRef(null);
+
+
 
   const createChat = async () => {
     try {
@@ -63,6 +67,39 @@ export default function Chat() {
     setIsConnected(false);
   };
 
+  const handleSocketTyping = ({chatId, userName}) => {
+    if (chatId !== cid) return;
+    setIsTyping(true);
+    setTypingUser((prev) => [...new Set([...prev, userName])]);
+    
+  };
+
+  const handleSocketStopTyping = ({chatId, userName}) => {
+    if (chatId !== cid) return;
+    setTypingUser((prev) => prev.filter((name) => name !== userName));
+    setIsTyping(false);
+  };
+
+
+  const handleMessageChange = (e) => {
+    setMessage(e.target.value);
+    if (!socket || !isConnected) return;
+    if (!selfTyping) {
+      setSelfTyping(true);
+    }
+
+    socket.emit("typing", {chatId:cid, userName:user.fullName});
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+   
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      socket.emit("stoppedTyping", { userId: user.fullName, chatId: cid.current?._id });
+    }, 1000);
+  };
+
   // send message
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -75,8 +112,9 @@ export default function Chat() {
           withCredentials: true,
         }
       );
+      //if (message.trim() === '') return;
 
-      socket.emit("typing", cid);
+      socket.emit("typing", {chatId:cid, userName:user?.fullName});
       //console.log("message", response.data.data.response);
       setMessage("");
     } catch (error) {
@@ -163,19 +201,22 @@ export default function Chat() {
     socket.on("messageReceived", onMessageReceived);
     socket.on("receivedAiMessage", onAiMessageReceived);
     socket.on("messageDelete", onMessageDeleted);
-
+    socket.on("typing", handleSocketTyping);
     return () => {
       socket.off("connected", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("messageReceived", onMessageReceived);
       socket.off("receivedAiMessage", onAiMessageReceived);
       socket.off("messageDelete", onMessageDeleted);
+      socket.off("stoppedTyping", handleSocketStopTyping);
     };
   });
 
-  const clickedChatInfo = () => {
-    setIsClickedChatInfo(!isClickedChatInfo);
+  // console.log("self typing", selfTyping)
+  // console.log("typing", isTyping)
+  console.log("typing user is", typingUser)
 
+  const clickedChatInfo = () => {
     const getRoomInfo = async () => {
       try {
         const result = await axios.get(
@@ -242,7 +283,7 @@ export default function Chat() {
       { withCredentials: true }
     );
     navigate("/app");
-    setIsClickedChatInfo(false);
+    //setIsClickedChatInfo(false);
   };
 
   const sendQuery = async (e) => {
@@ -306,11 +347,10 @@ export default function Chat() {
 
   //console.log("ai msg", aiMessages);
 
-  console.log("query:", query);
+  //console.log("query:", query);
+ 
 
-  const handleMessageChange = (e) => {
-    setMessage(e.target.value);
-  };
+  
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
   };
@@ -325,11 +365,12 @@ export default function Chat() {
     setIsRenameRoom(false);
   };
 
-  const handleDeleteRoom = async () => {
+  const deleteRoom = async () => {
     await axios.delete(
       `${import.meta.env.VITE_BACKEND_API}/chats/delete-room/${cid}`,
       { withCredentials: true }
     );
+    navigate("/app");
   };
 
   const RemoveUser = async (userId) => {
@@ -340,8 +381,9 @@ export default function Chat() {
     );
   };
 
+
   return (
-    <div className=" h-svh w-svw bg-slate-900">
+    <div className=" bg-slate-900">
       <ChatHeader
         clickedChat={clickedChat}
         isClickedAiChat={isClickedAiChat}
@@ -349,16 +391,17 @@ export default function Chat() {
         clickedChatInfo={clickedChatInfo}
         oneOnOneChatInfo={oneOnOneChatInfo}
         handleDeleteOnOneChat={handleDeleteOnOneChat}
-        isClickedChatInfo={isClickedChatInfo}
         roomInfo={roomInfo}
         rid={rid}
         cid={cid}
         RemoveUser={RemoveUser}
-        handleDeleteRoom={handleDeleteRoom}
+        deleteRoom={deleteRoom}
         handleRenameRoom={handleRenameRoom}
+        typingUser={typingUser}
+        isTyping={isTyping}
       />
 
-      <div>
+      <div >
         {!isClickedAiChat ? (
           <div className=" h-svh">
             <ChatDisplay

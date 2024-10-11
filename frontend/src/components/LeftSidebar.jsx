@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../store/UserContext.jsx";
 import { AuthContext } from "../store/AuthContext.jsx";
 
-export default function LeftSidebar() {
+export default function LeftSidebar({setClickedMobChat}) {
   const [isClickedCreateBtn, setIsClickedCreateBtn] = useState(false);
   const [isClickedCreateRoom, setIsClickedCreateRoom] = useState(false);
   const [selectUser, setSelectUser] = useState([]);
@@ -16,6 +16,7 @@ export default function LeftSidebar() {
   const { user } = useContext(AuthContext);
 
   const navigate = useNavigate();
+
 
   //delete chat
   const handleChatDelete = async (item) => {
@@ -106,28 +107,32 @@ export default function LeftSidebar() {
 
   const handleClickedChat = (mId) => {
     setIsClickedChatId(mId);
+    setClickedMobChat(true)
   };
 
-  console.log(isClickedChatId);
+  //console.log(isClickedChatId);
+
+  
+  
   return (
     <>
-      <div className=" bg-slate-700 h-full w-52 lg:w-96 top-8 lg:top-auto absolute lg:relative lg:h-screen lg:flex lg:flex-col">
+      <div className=" bg-slate-700 h-full w-full lg:w-96  lg:h-screen lg:flex lg:flex-col">
         <div className=" bg-slate-500 w-full flex justify-between p-2 pr-3">
           <h2 className=" font-semibold">Ai Smart Chat App</h2>
-          <button onClick={clickedCreateBtn}><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-user-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" /><path d="M16 19h6" /><path d="M19 16v6" /><path d="M6 21v-2a4 4 0 0 1 4 -4h4" /></svg></button>
+          <button onClick={clickedCreateBtn}><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-user-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" /><path d="M16 19h6" /><path d="M19 16v6" /><path d="M6 21v-2a4 4 0 0 1 4 -4h4" /></svg></button>
         </div>
 
         {/* START CREATE ROOM */}
         {isClickedCreateBtn && (
-          <div className=" h-96 w-80 bg-slate-300 absolute">
+          <div className=" h-fit w-80 bg-slate-900 absolute p-2">
             <div className=" flex flex-col">
               <button
                 onClick={clickedCreateRoom}
-                className=" bg-orange-400 p-1 m-2"
+                className=" bg-orange-400 m-1"
               >
                 Create Chat Room
               </button>
-              <button className=" bg-orange-400 p-1 m-2">Add Friend</button>
+              <button className=" bg-orange-400 m-1">Add Friend</button>
               <ul>
                 {userList?.map((item) => (
                   <li key={item._id} onClick={() => createChat(item._id)}>
@@ -149,7 +154,7 @@ export default function LeftSidebar() {
                   ></input>
                   <ul>
                     {userList?.map((item) => (
-                      <li className=" w-full m-1 p-1 bg-slate-600 flex justify-between px-3">
+                      <li className=" bg-orange-400 m-1 mt-2 p-1">
                         <span>{item.fullName}</span>
 
                         <input
@@ -160,10 +165,14 @@ export default function LeftSidebar() {
                       </li>
                     ))}
                   </ul>
-                  <button type="submit">Create</button>
+                  <div className=" flex justify-between mt-3"><button type="submit" className=" bg-yellow-400 rounded-md p-1">Create</button>
+                  <button type="button" onClick={  () => setIsClickedCreateRoom(false)} className=" bg-red-500 rounded-md p-1">Close</button></div>
                 </form>
               </div>
             )}
+            <div className=" w-full mt-5 flex justify-end">
+            <button type="button" onClick={  () => setIsClickedCreateBtn(false)} className=" bg-red-500 rounded-md p-1 ">Close</button>
+              </div>
           </div>
         )}
         {/* END CREATE ROOM */}

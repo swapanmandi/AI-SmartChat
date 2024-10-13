@@ -7,8 +7,9 @@ import { AuthContext } from "../store/AuthContext.jsx";
 import Input from "../components/Input.jsx";
 import ChatDisplay from "../components/ChatDisplay.jsx";
 import ChatHeader from "../components/ChatHeader.jsx";
+import LeftSidebar from "../components/LeftSidebar.jsx";
 
-export default function Chat() {
+export default function Chat({ clickedMobChat, setClickedMobChat }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,9 +24,11 @@ export default function Chat() {
   const [aiMessages, setAiMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [selfTyping, setSelfTyping] = useState(false);
-const [typingUser, setTypingUser] = useState([])
+  const [typingUser, setTypingUser] = useState([]);
   const [query, setQuery] = useState("");
   const [chatQuery, setChatQuery] = useState("");
+  const [unreadMessages, setUnreadMessages] = useState([]);
+
   const { userList, getUserList } = useUser();
   const { user } = useContext(AuthContext);
   const { cid, rid } = useParams();
@@ -39,8 +42,6 @@ const [typingUser, setTypingUser] = useState([])
   const copyRef = useRef();
 
   const typingTimeoutRef = useRef(null);
-
-
 
   const createChat = async () => {
     try {
@@ -67,19 +68,17 @@ const [typingUser, setTypingUser] = useState([])
     setIsConnected(false);
   };
 
-  const handleSocketTyping = ({chatId, userName}) => {
+  const handleSocketTyping = ({ chatId, userName }) => {
     if (chatId !== cid) return;
     setIsTyping(true);
     setTypingUser((prev) => [...new Set([...prev, userName])]);
-    
   };
 
-  const handleSocketStopTyping = ({chatId, userName}) => {
+  const handleSocketStopTyping = ({ chatId, userName }) => {
     if (chatId !== cid) return;
     setTypingUser((prev) => prev.filter((name) => name !== userName));
     setIsTyping(false);
   };
-
 
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
@@ -88,15 +87,17 @@ const [typingUser, setTypingUser] = useState([])
       setSelfTyping(true);
     }
 
-    socket.emit("typing", {chatId:cid, userName:user.fullName});
+    socket.emit("typing", { chatId: cid, userName: user.fullName });
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-   
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      socket.emit("stoppedTyping", { userId: user.fullName, chatId: cid.current?._id });
+      socket.emit("stoppedTyping", {
+        userId: user.fullName,
+        chatId: cid.current?._id,
+      });
     }, 1000);
   };
 
@@ -114,7 +115,7 @@ const [typingUser, setTypingUser] = useState([])
       );
       //if (message.trim() === '') return;
 
-      socket.emit("typing", {chatId:cid, userName:user?.fullName});
+      socket.emit("typing", { chatId: cid, userName: user?.fullName });
       //console.log("message", response.data.data.response);
       setMessage("");
     } catch (error) {
@@ -154,7 +155,11 @@ const [typingUser, setTypingUser] = useState([])
 
   // message receive event
   const onMessageReceived = (newMessage) => {
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    if (!cid) {
+      setUnreadMessages((prev) => [...prev, newMessage]);
+    } else {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    }
   };
 
   // ai message receive event
@@ -168,7 +173,7 @@ const [typingUser, setTypingUser] = useState([])
     setMessages((prevMsg) =>
       prevMsg.filter((msg) => msg._id !== messageId._id)
     );
-    console.log("Deleted message with ID:", messageId._id);
+    //console.log("Deleted message with ID:", messageId._id);
   };
 
   useEffect(() => {
@@ -214,7 +219,7 @@ const [typingUser, setTypingUser] = useState([])
 
   // console.log("self typing", selfTyping)
   // console.log("typing", isTyping)
-  console.log("typing user is", typingUser)
+  console.log("typing user is", typingUser);
 
   const clickedChatInfo = () => {
     const getRoomInfo = async () => {
@@ -336,7 +341,7 @@ const [typingUser, setTypingUser] = useState([])
       { withCredentials: true }
     );
     socket.emit("messageDelete", cid);
-    console.log("cid", cid);
+    //console.log("cid", cid);
     //setMessages(prevMsg => prevMsg.filter(msg => msg._id !== cid))
     setViewMessageOptions(false);
   };
@@ -345,12 +350,10 @@ const [typingUser, setTypingUser] = useState([])
     getAiChatMessages();
   }, [aiChatId]);
 
-  //console.log("ai msg", aiMessages);
+  console.log("unreadmsg", unreadMessages);
 
-  //console.log("query:", query);
- 
+  console.log("cid:", cid);
 
-  
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
   };
@@ -381,70 +384,78 @@ const [typingUser, setTypingUser] = useState([])
     );
   };
 
-
   return (
-    <div className=" bg-slate-900">
-      <ChatHeader
-        clickedChat={clickedChat}
-        isClickedAiChat={isClickedAiChat}
-        clickedAiChat={clickedAiChat}
-        clickedChatInfo={clickedChatInfo}
-        oneOnOneChatInfo={oneOnOneChatInfo}
-        handleDeleteOnOneChat={handleDeleteOnOneChat}
-        roomInfo={roomInfo}
-        rid={rid}
-        cid={cid}
-        RemoveUser={RemoveUser}
-        deleteRoom={deleteRoom}
-        handleRenameRoom={handleRenameRoom}
-        typingUser={typingUser}
-        isTyping={isTyping}
-      />
+    <div className=" flex h-svh w-svw">
+      <div className={` ${clickedMobChat ? "hidden" : ""} lg:block w-full h-full lg:w-auto`}>
+        <LeftSidebar setClickedMobChat={setClickedMobChat}/>
+      </div>
+      <div
+        className={`bg-slate-900 h-full w-full  ${
+          clickedMobChat ? "block" : "hidden"
+        } lg:block`}
+      >
+        <ChatHeader
+          clickedChat={clickedChat}
+          isClickedAiChat={isClickedAiChat}
+          clickedAiChat={clickedAiChat}
+          clickedChatInfo={clickedChatInfo}
+          oneOnOneChatInfo={oneOnOneChatInfo}
+          handleDeleteOnOneChat={handleDeleteOnOneChat}
+          roomInfo={roomInfo}
+          rid={rid}
+          cid={cid}
+          RemoveUser={RemoveUser}
+          deleteRoom={deleteRoom}
+          handleRenameRoom={handleRenameRoom}
+          typingUser={typingUser}
+          isTyping={isTyping}
+        />
 
-      <div >
-        {!isClickedAiChat ? (
-          <div className=" h-svh">
-            <ChatDisplay
-              isClickedAiChat={isClickedAiChat}
-              clickedChat={clickedChat}
-              clickedAiChat={clickedAiChat}
-              editingRoomName={editingRoomName}
-              ClickedonAddUser={ClickedonAddUser}
-              isClickedOnAddUser={isClickedOnAddUser}
-              handleInputChange={handleInputChange}
-              setIsClickedOnAddUser={setIsClickedOnAddUser}
-              handleAddUser={handleAddUser}
-              handleChatQuery={handleChatQuery}
-              deleteMessage={deleteMessage}
-              loading={loading}
-              messages={messages}
-            />
-            <Input
-              value={message}
-              onChange={handleMessageChange}
-              placeholder="start Chat"
-              disabled={!message}
-              onSubmit={sendMessage}
-            />
-          </div>
-        ) : (
-          <div className=" h-svh">
-            <ChatDisplay
-              deleteMessage={deleteMessage}
-              setIsClickedAiChat={setIsClickedAiChat}
-              loading={loading}
-              messages={aiMessages}
-            />
+        <div>
+          {!isClickedAiChat ? (
+            <div className=" h-svh">
+              <ChatDisplay
+                isClickedAiChat={isClickedAiChat}
+                clickedChat={clickedChat}
+                clickedAiChat={clickedAiChat}
+                editingRoomName={editingRoomName}
+                ClickedonAddUser={ClickedonAddUser}
+                isClickedOnAddUser={isClickedOnAddUser}
+                handleInputChange={handleInputChange}
+                setIsClickedOnAddUser={setIsClickedOnAddUser}
+                handleAddUser={handleAddUser}
+                handleChatQuery={handleChatQuery}
+                deleteMessage={deleteMessage}
+                loading={loading}
+                messages={messages}
+              />
+              <Input
+                value={message}
+                onChange={handleMessageChange}
+                placeholder="start Chat"
+                disabled={!message}
+                onSubmit={sendMessage}
+              />
+            </div>
+          ) : (
+            <div className=" h-svh">
+              <ChatDisplay
+                deleteMessage={deleteMessage}
+                setIsClickedAiChat={setIsClickedAiChat}
+                loading={loading}
+                messages={aiMessages}
+              />
 
-            <Input
-              value={query}
-              onChange={handleQueryChange}
-              placeholder="start Ai Chat"
-              disabled={!query}
-              onSubmit={sendQuery}
-            />
-          </div>
-        )}
+              <Input
+                value={query}
+                onChange={handleQueryChange}
+                placeholder="start Ai Chat"
+                disabled={!query}
+                onSubmit={sendQuery}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { createAiChat } from "../controllers/aiMessage.controller.js";
+import { createAiChat, getAiMessages } from "../controllers/aiMessage.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/ai-chat/:id").post(verifyJWT, createAiChat);
-
+router.route("/create-chat/:id").post(verifyJWT, createAiChat);
+router.route("/get-messages/:id").get(verifyJWT, getAiMessages)
 export default router;

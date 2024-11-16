@@ -7,7 +7,7 @@ import { Server, Socket } from "socket.io";
 const mountJoinChatEvent = (socket) => {
   socket.on("joinChat", (chatId) => {
     socket.join(chatId);
-    console.log(`${chatId} is opened`)
+    console.log(`${chatId} is opened a chat`)
   });
 };
 
@@ -19,14 +19,16 @@ const mountJoinAiChatEvent = (socket) => {
 };
 
 const mountTypingEvent = (socket) => {
-  socket.on("typing", (chatId) => {
-    socket.in(chatId).emit("typing", chatId);
+  socket.on("typing", ({chatId,userName}) => {
+    socket.in(chatId).emit("typing", {chatId, userName});
+    console.log(userName, " is typing")
   });
 };
 
 const mountStoppedTypingEvent = (socket) => {
-  socket.on("stoppedTyping", (chatId) => {
-    socket.in(chatId).emit("stoppedTyping", chatId);
+  socket.on("stoppedTyping", ({chatId, userName}) => {
+    socket.in(chatId).emit("stoppedTyping", {chatId, userName});
+    console.log("someone is stopped typing")
   });
 };
 

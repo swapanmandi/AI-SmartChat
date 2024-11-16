@@ -34,9 +34,9 @@ export default function Header({ setClickedMobChat, clickedMobChat }) {
   };
 
   return (
-    <div className=" items-center flex flex-col justify-center">
+    <div className=" w-full  h-full items-center flex flex-col justify-center">
       <div
-        className={` bg-teal-800 lg:h-full h-fit w-full lg:w-12 lg:flex flex-col items-center p-1 ${
+        className={` bg-teal-800 lg:h-full w-full lg:w-12 lg:flex flex-col items-center p-1 ${
           showHeader ? "flex" : "hidden"
         }`}
       >
@@ -114,10 +114,10 @@ export default function Header({ setClickedMobChat, clickedMobChat }) {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-narrow-left"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="icon icon-tabler icons-tabler-outline icon-tabler-arrow-narrow-left"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
               <path d="M5 12l14 0" />
@@ -135,9 +135,9 @@ export default function Header({ setClickedMobChat, clickedMobChat }) {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className="icon icon-tabler icons-tabler-outline icon-tabler-chevron-up"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -151,9 +151,9 @@ export default function Header({ setClickedMobChat, clickedMobChat }) {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />

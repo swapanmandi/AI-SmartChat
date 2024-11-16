@@ -66,14 +66,15 @@ const messageCommonAggregation = () => {
               email: 1,
             },
           },
-          {
-            $addFields: {
-              sender: {
-                $first: "$sender",
-              },
-            },
-          },
+          
         ],
+      },
+    },
+    {
+      $addFields: {
+        sender: {
+          $first: "$sender",
+        },
       },
     },
   ];
@@ -178,7 +179,7 @@ const getMessages = asyncHandler(async (req, res) => {
 
 // delete messages
 
-const deleteMessages = asyncHandler(async(req, res) =>{
+const deleteMessage = asyncHandler(async(req, res) =>{
   const {chatId, messageId} = req.params
 
   const chat = await Chat.findOne({
@@ -214,4 +215,4 @@ chat.participants.forEach(item => {
 return res.status(200).json(new ApiResponse(200, message, "Message Delete Successfully"))
 })
 
-export { sendMessage, getMessages, deleteMessages };
+export { sendMessage, getMessages, deleteMessage };

@@ -8,9 +8,9 @@ import { initializeSocketIO } from "./utils/socket.js";
 import chatRouter from "./routes/chat.route.js";
 import userRouter from "./routes/user.route.js";
 import cookieParser from "cookie-parser";
-import aiMessageRouter from "./routes/aiMessage.routes.js";
+import roomRouter from "./routes/room.routes.js";
 import messageRouter from "./routes/message.routes.js";
-import aiChatRouter from "./routes/aiChat.routes.js";
+import aiRoomMessageRouter from "./routes/aiRoomChat.routes.js";
 
 const app = express();
 
@@ -47,9 +47,8 @@ app.use(cookieParser());
 
 //route declarations
 app.use("/api/v1/chat-app/users", userRouter);
-app.use("/api/v1/chat-app/chats", chatRouter);
+app.use("/api/v1//chat-app/chats", chatRouter);
 app.use("/api/v1/chat-app/messages", messageRouter);
+app.use("/room", roomRouter, aiRoomMessageRouter);
 
-app.use("/api/v1/chat-app/ai-chats", aiChatRouter);
-app.use("/api/v1/chat-app/ai-messages", aiMessageRouter)
 export { server };

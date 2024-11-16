@@ -7,7 +7,7 @@ const [code, setCode] = useState('');
 
 const handleSubmit = (e) =>{
   e.preventDefault();
-  console.log('code', code)
+  
   
   const sendCode = {
     data: code

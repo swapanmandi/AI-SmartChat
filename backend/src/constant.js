@@ -1,1 +1,1 @@
-export const DB_NAME = "codehelpapp-db";
+export const DB_NAME = "aiapp-db";

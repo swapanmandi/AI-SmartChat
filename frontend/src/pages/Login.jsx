@@ -2,23 +2,23 @@ import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../store/AuthContext.jsx";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Login() {
   const [email, setEmail] = useState("sm.com");
   const [password, setPassword] = useState("12345");
 
   const { signin } = useContext(AuthContext);
+  const { loginWithRedirect } = useAuth0();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await signin(email, password);
+      signin(email, password);
     } catch (error) {
       console.log("error happening", error);
     }
   };
-
-
 
   return (
     <>
@@ -47,13 +47,19 @@ export default function Login() {
               ></input>
             </label>
 
-            <div className=" flex ">
-              {" "}
-              <button className=" bg-sky-400 p-1 rounded-md m-3" type="submit">
-                Sign In
-              </button>
-             
-            </div>
+           <div className=" flex "> <button
+              className=" bg-sky-400 p-1 rounded-md m-3"
+              type="submit"
+            >
+              Sign In
+            </button>
+            <button
+              className=" bg-sky-400 p-1 rounded-md m-3"
+              type="button"
+              onClick={()=> loginWithRedirect()}
+            >
+              Sign In with Gooogle
+            </button></div>
           </form>
           <Link to="/">
             <h2>Back To Home Page</h2>

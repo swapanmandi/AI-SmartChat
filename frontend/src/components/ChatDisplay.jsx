@@ -61,11 +61,8 @@ export default function ChatDisplay({
     setViewMessageOptions(false);
   };
 
-  // console.log("messages",messages)
-  // console.log("user id", user._id)
-
   return (
-    <div className=" bg-orange-400 h-[81%] overflow-y-scroll pb-10">
+    <div className=" bg-orange-400 h-[74%] overflow-y-scroll pb-10">
       {loading ? (
         <Loader />
       ) : (
@@ -75,14 +72,14 @@ export default function ChatDisplay({
               <div
                 key={item._id}
                 className={` w-full flex ${
-                  item.sender?._id === user?._id || item.sender?.user === user?._id && "justify-end"
+                  item.sender?._id === user?._id && "justify-end"
                 }`}
               >
                 {/* {console.log(item.sender?._id, user.cid)} */}
                 <div className=" h-fit w-fit text-black m-2 flex justify-between">
                   <span
                     className={` ${
-                      item.sender?._id === user?._id || item.sender?.user === user?._id && "hidden"
+                      item.sender?._id === user?._id && "hidden"
                     } bg-slate-400 h-8 w-8 rounded-full p-1 m-1`}
                   >
                     {item.sender?.fullName}

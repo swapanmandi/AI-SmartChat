@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { AuthProvider } from "./store/AuthContext.jsx";
 import Profile from "./components/Profile.jsx";
 import Input from "./components/Input.jsx";
+import { Auth0Provider } from '@auth0/auth0-react';
 
 
 const Signup = lazy(() => import("./pages/Signup.jsx"))
@@ -75,10 +76,16 @@ element: <Home />
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-   
+    <Auth0Provider
+    domain="dev-phsh8i6jitay3sct.us.auth0.com"
+    clientId="faTJHPrkSXkeekYYMZMk7LJuhA6uIKni"
+    authorizationParams={{
+      redirect_uri: window.location.origin
+    }}
+  >
       <RouterProvider router={router}>
       <AuthProvider />
         </RouterProvider>
-      
+        </Auth0Provider>
   </React.StrictMode>
 );

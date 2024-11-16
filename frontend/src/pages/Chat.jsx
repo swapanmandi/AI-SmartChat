@@ -28,7 +28,7 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
   const [query, setQuery] = useState("");
   const [chatQuery, setChatQuery] = useState("");
   const [unreadMessages, setUnreadMessages] = useState([]);
-  const [newMessageCID, setNewMessageCID] = useState("");
+
   const { userList, getUserList } = useUser();
   const { user } = useContext(AuthContext);
   const { cid, rid } = useParams();
@@ -42,10 +42,6 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
   const copyRef = useRef();
 
   const typingTimeoutRef = useRef(null);
-
-  const TotalUnreadMessages = unreadMessages.filter(
-    (item) => item.chat === cid
-  ).length;
 
   const createChat = async () => {
     try {
@@ -148,10 +144,8 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
           withCredentials: true,
         }
       );
-      console.log("getting chat messages:", response.data.data);
+      //console.log("getting chat messages:", response.data.data);
       setMessages(response.data.data);
-
-      setUnreadMessages.filter((item) => item.chat !== cid);
     } catch (error) {
       console.error("Error to get chat messages", error);
     } finally {
@@ -161,8 +155,7 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
 
   // message receive event
   const onMessageReceived = (newMessage) => {
-    setNewMessageCID(newMessage.chat);
-    if (cid !== newMessage?.chat) {
+    if (!cid) {
       setUnreadMessages((prev) => [...prev, newMessage]);
     } else {
       setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -226,7 +219,7 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
 
   // console.log("self typing", selfTyping)
   // console.log("typing", isTyping)
-  //console.log("typing user is", typingUser);
+  console.log("typing user is", typingUser);
 
   const clickedChatInfo = () => {
     const getRoomInfo = async () => {
@@ -357,7 +350,7 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
     getAiChatMessages();
   }, [aiChatId]);
 
-  //console.log("unreadmsg", unreadMessages);
+  console.log("unreadmsg", unreadMessages);
 
   console.log("cid:", cid);
 
@@ -393,16 +386,8 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
 
   return (
     <div className=" flex h-svh w-svw">
-      <div
-        className={` ${
-          clickedMobChat ? "hidden" : ""
-        } lg:block w-full h-full lg:w-auto`}
-      >
-        <LeftSidebar
-          setClickedMobChat={setClickedMobChat}
-          TotalUnreadMessages={TotalUnreadMessages}
-          newMessageCID={newMessageCID}
-        />
+      <div className={` ${clickedMobChat ? "hidden" : ""} lg:block w-full h-full lg:w-auto`}>
+        <LeftSidebar setClickedMobChat={setClickedMobChat}/>
       </div>
       <div
         className={`bg-slate-900 h-full w-full  ${

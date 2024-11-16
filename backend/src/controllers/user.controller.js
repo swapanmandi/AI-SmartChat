@@ -91,9 +91,9 @@ const loginUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: false,
-    sameSite: "lax",
-    //path: '/',
-    maxAge: 7200000,
+    // sameSite: "lax",
+    // path: '/',
+    //maxAge: 7200000,
   };
 
   return res
@@ -233,6 +233,7 @@ export {
   logoutUser,
   refreshAccessToken,
   getCurrentUser,
+  authRoute,
   userList,
   getUser
 };

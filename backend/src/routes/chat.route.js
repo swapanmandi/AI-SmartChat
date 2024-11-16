@@ -26,7 +26,7 @@ router.use(verifyJWT);
 router.route("/chat-users").get(verifyJWT, getChatUsers);
 router.route("/oneononechat/:id").post(verifyJWT, createOrGetOneOnOneChat);
 router.route("/create-roomchat").post(verifyJWT, createRoomChat);
-router.route("/all-chats").get(verifyJWT, getAllChats);
+router.route("/chats").get(verifyJWT, getAllChats);
 router.route("/room-info/:id").get(verifyJWT, getRoomChatDetails)
 router.route("/rename-room/:id").patch(verifyJWT, renameRoomName)
 router.route("/add-participant").patch(verifyJWT, addParticipantToRoomChat)

@@ -12,7 +12,6 @@ const AuthProvider = ({ children }) => {
 
   const navigate = useNavigate();
 
-
   const signup = async (fullName, email, password) => {
     const data = { fullName, email, password };
     await axios.post(`${import.meta.env.VITE_BACKEND_API}/users/signup`, data, {
@@ -37,8 +36,6 @@ const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(result.data.data.user));
   };
 
-
-
   const signout = async () => {
     await axios.post(
       `${import.meta.env.VITE_BACKEND_API}/users/signout`,
@@ -54,20 +51,17 @@ const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-   
-      setIsLoading(true);
-      const _token = localStorage.getItem("token");
-      const _user = JSON.parse(localStorage.getItem("user"));
+    setIsLoading(true);
+    const _token = localStorage.getItem("token");
+    const _user = JSON.parse(localStorage.getItem("user"));
 
-      if (_token && _user) {
-        setToken(_token);
-        setUser(_user);
-      } 
-      
-      setIsLoading(false);
+    if (_token && _user) {
+      setToken(_token);
+      setUser(_user);
+    }
 
+    setIsLoading(false);
   }, [navigate]);
-
 
   return (
     <AuthContext.Provider

@@ -19,7 +19,7 @@ const server = createServer(app);
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: process.env.CORS_ORIGIN,
+    origin: "https://ai-smartchat.onrender.com",
     credentials: true,
   },
 });
@@ -31,7 +31,7 @@ initializeSocketIO(io);
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: "https://ai-smartchat.onrender.com",
     credentials: true,
   })
 );

@@ -91,7 +91,7 @@ const loginUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
-    sameSite: "lax",
+    sameSite: "None",
     //path: '/',
     maxAge: 7200000,
   };

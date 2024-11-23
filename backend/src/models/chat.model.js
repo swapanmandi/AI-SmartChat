@@ -54,6 +54,10 @@ admin:{
   required: function(){
     return this.isRoomChat
   }
+},
+roomIcon:{
+  type: String,
+
 }
    },
   {

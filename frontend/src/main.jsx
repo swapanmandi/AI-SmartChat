@@ -5,15 +5,13 @@ import "./index.css";
 import PublicHome from "./pages/PublicHome.jsx";
 import Home from "./pages/Home.jsx";
 import App from "./App.jsx";
-//import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { AuthProvider } from "./store/AuthContext.jsx";
-import Profile from "./components/Profile.jsx";
-import Input from "./components/Input.jsx";
+import { Provider } from "react-redux";
+import { store } from "./store/store.js";
+import LeftSidebar from "./components/LeftSidebar.jsx";
 
-
-const Signup = lazy(() => import("./pages/Signup.jsx"))
+const Signup = lazy(() => import("./pages/Signup.jsx"));
 
 const router = createBrowserRouter([
   {
@@ -26,7 +24,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/signup",
-        element: (<Suspense fallback={<div>Loading</div>}><Signup /></Suspense>)
+        element: (
+          <Suspense fallback={<div>Loading</div>}>
+            <Signup />
+          </Suspense>
+        ),
       },
       {
         path: "/signin",
@@ -34,51 +36,38 @@ const router = createBrowserRouter([
       },
     ],
   },
-  
+
   {
-   path: "/app",
-   element: <App />,
+    path: "/app",
+    element: <App />,
 
     children: [
       {
-      path: "/app",
-    element: (
-      
-        <Home />
-      
-    )},
-    {
-
-      path:"/app/chat/:cid/:rid",
-      element:
-      <Home />
-    
-    },
-    {
-      path: "/app/room-chat/:cid",
-      element: <Home />
-    },{
-path: "/app/chat/:cid/:rid/:cq",
-element: <Home />
-    },
+        path: "/app",
+        element: <LeftSidebar />,
+      },
       {
-        path: "/app/profile",
-        element: <Profile />
+        path: "/app/chat/:cid/:rid",
+        element: <Home />,
+      },
+      {
+        path: "/app/room-chat/:cid",
+        element: <Home />,
+      },
+      {
+        path: "/app/chat/:cid/:rid/:cq",
+        element: <Home />,
       },
     ],
   },
-  {
-    path:"/test",
-    element: <Input/>
-  }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-   
+    <Provider store={store}>
       <RouterProvider router={router}>
-      <AuthProvider />
-        </RouterProvider>
-      
+        <AuthProvider />
+      </RouterProvider>
+    </Provider>
   </React.StrictMode>
 );

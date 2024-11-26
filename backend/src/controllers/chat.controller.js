@@ -1,102 +1,11 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { Message } from "../models/message.model.js";
 import { Chat } from "../models/chat.model.js";
-import mongoose from "mongoose";
 import { emitSocketEvent } from "../utils/socket.js";
 import { User } from "../models/user.model.js";
-
-// const chatGenerate = asyncHandler(async (req, res) => {
-//   const { message } = req.body;
-//   const { id: receiverId } = req.params;
-//   const senderId = req.user?._id;
-
-//   const existedChat = await Chat.findOne({
-//     participants: {
-//       $all: [senderId, receiverId],
-//     },
-//   });
-
-//   if (existedChat) {
-//     existedChat.chats.push({
-//       senderId,
-//       receiverId,
-//       message,
-//     });
-//     existedChat.save();
-//   } else {
-//     const newChat = await Chat.create({
-//       participants: [senderId, receiverId],
-//       chats: [{ senderId, receiverId, message }],
-//     });
-
-//     return res
-//     .status(200)
-//     .json(new ApiResponse(200, newChat, "Chat saved successfully."));
-//   }
-
-//   return res
-//     .status(200)
-//     .json(new ApiResponse(200, existedChat, "Chat added successfully."));
-// });
-
-// const getMessages = asyncHandler(async (req, res) => {
-//   const { id: receiverIdId } = req.params;
-//   const senderId = req.user?._id
-//   const chatSession = await Chat.findOne({participants: [senderId, receiverIdId] }).populate("chats.senderId", "fullName");
-
-//   if (!chatSession) {
-//     return res.status(404).json({ error: "Chat session not found" });
-//   }
-
-//   res
-//     .status(200)
-//     .json(
-//       new ApiResponse(200, {chats: chatSession.chats, user: req.user?.fullName}, "messagges got successfully")
-//     );
-// });
-
-// get chat List
-
-// const getChatList = asyncHandler(async (req, res) => {
-//   const chatList = await Message.find({}, "sessionId");
-
-//   if (!chatList) {
-//     throw new ApiError(400, "there is no chat list");
-//   }
-
-//   res.status(200).json(
-//     new ApiResponse(
-//       200,
-//       { list: chatList },
-
-//       "Chat list got successfully!"
-//     )
-//   );
-// });
-
-// // delete chat
-
-// const deleteChat = asyncHandler(async (req, res) => {
-//   try {
-//     const { id: uuid } = req.params;
-
-//     //console.log("id:", uuid);
-
-//     const result = await Message.deleteOne({ _id: uuid });
-
-//     if (result.deletedCount === 0) {
-//       throw new ApiError(400, "cant findchat");
-//     }
-
-//     res.status(200).json(new ApiResponse(200, {}, "chat deleted successfully"));
-//   } catch (error) {
-//     throw new ApiError(500, "error to delete.", error);
-//   }
-// });
-
-// export { chatGenerate, getMessages, getChatList, deleteChat };
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import mongoose from "mongoose";
 
 const commonChatAggregation = () => {
   return [
@@ -159,6 +68,7 @@ const commonChatAggregation = () => {
   ];
 };
 
+// get users
 const getChatUsers = asyncHandler(async (req, res) => {
   const users = await User.aggregate([
     {
@@ -181,6 +91,7 @@ const getChatUsers = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, users, "Fetched All Chat Users Successfully"));
 });
 
+// create and get single chat
 const createOrGetOneOnOneChat = asyncHandler(async (req, res) => {
   const { id: receiverId } = req.params;
 
@@ -273,6 +184,9 @@ const createRoomChat = asyncHandler(async (req, res) => {
   if (members.length < 2) {
     throw new ApiError(400, "You must add atleast 1 friend");
   }
+
+  const roomIconLocalPath = req.files.roomIcon[0].path;
+  console.log(roomIconLocalPath);
 
   const roomChat = await Chat.create({
     name,
@@ -407,7 +321,7 @@ const renameRoomName = asyncHandler(async (req, res) => {
 
 const addParticipantToRoomChat = asyncHandler(async (req, res) => {
   const { chatId, participantId } = req.body;
-  console.log(req.body)
+  console.log(req.body);
 
   const roomChat = await Chat.findOne({ _id: chatId, isRoomChat: true });
   if (!roomChat) {
@@ -453,136 +367,172 @@ const addParticipantToRoomChat = asyncHandler(async (req, res) => {
 
   emitSocketEvent(req, participantId, "newChat", payload);
 
-  return res.status(200).json(new ApiResponse(200, payload, "User add to room successfully."));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, payload, "User add to room successfully."));
 });
 
 //remove participant fron room
 
-const removeParticipantFromRoomChat = asyncHandler(async(req, res) =>{
+const removeParticipantFromRoomChat = asyncHandler(async (req, res) => {
+  const { chatId, participantId } = req.body;
 
-  const {chatId, participantId} = req.body
+  const roomChat = await Chat.findOne({ _id: chatId, isRoomChat: true });
 
-  const roomChat = await Chat.findOne({_id: chatId, isRoomChat: true})
-
-  if(!roomChat)
-  {
-    throw new ApiError(404, "Room Chat does not exist")
+  if (!roomChat) {
+    throw new ApiError(404, "Room Chat does not exist");
   }
 
-  if(roomChat?.admin.toString() !== req.user?._id.toString()){
-    throw new ApiError(409, "You are not a admin")
+  if (roomChat?.admin.toString() !== req.user?._id.toString()) {
+    throw new ApiError(409, "You are not a admin");
   }
 
-  const existedChat = roomChat.participants
+  const existedChat = roomChat.participants;
 
-  if(!existedChat.includes(participantId)){
-    throw new ApiError(404, "User does not exist in room")
+  if (!existedChat.includes(participantId)) {
+    throw new ApiError(404, "User does not exist in room");
   }
 
-  const updatedChat = await Chat.findByIdAndUpdate(chatId, {
-    $pull:{
-      participants: participantId
+  const updatedChat = await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      $pull: {
+        participants: participantId,
+      },
+    },
+    {
+      new: true,
     }
-  }, {
-    new: true
-  })
+  );
 
   const chat = await Chat.aggregate([
     {
       $match: {
-        _id: updatedChat?._id
-      }
+        _id: updatedChat?._id,
+      },
     },
-    ...commonChatAggregation()
-  ])
+    ...commonChatAggregation(),
+  ]);
 
-  const payload = chat[0]
+  const payload = chat[0];
 
-  if(!payload){
-    throw new ApiError(500, "error to remove - internal server error")
+  if (!payload) {
+    throw new ApiError(500, "error to remove - internal server error");
   }
 
-  emitSocketEvent(req, participantId, "leaveChat", payload)
+  emitSocketEvent(req, participantId, "leaveChat", payload);
 
-  return res.status(200).json(new ApiResponse(200, payload, "User removed successfully"))
-})
+  return res
+    .status(200)
+    .json(new ApiResponse(200, payload, "User removed successfully"));
+});
 
 //delete room
-const deleteRoomChat = asyncHandler(async(req, res) =>{
-  const {id:chatId} = req.params
-
-const chat = await Chat.aggregate([
-  {
-    $match: {
-      _id: new mongoose.Types.ObjectId(chatId),
-      isRoomChat: true
-    }
-  },
-  ...commonChatAggregation()
-])
-
-const payload = chat[0]
-
-if(!payload){
-  throw new ApiError(404, "The Room does not exist.")
-}
-
-if(payload.admin?.toString() !== req.user?._id.toString()){
-  throw new ApiError(409, "You are not a admin")
-}
-
-await Chat.findByIdAndDelete(chatId)
-
-payload?.participants.forEach(item => {
-
-  if(item._id.toString() === req.user?._id.toString()) return
-
-  emitSocketEvent(req, item._id, "leaveChat", payload)
-
-})
-return res.status(200).json(new ApiResponse(200, {}, "Room deleted successfully"))
-})
-
-
-const deleteOneOnOneChat = asyncHandler(async(req, res) =>{
-
-  const {id: chatId} = req.params
+const deleteRoomChat = asyncHandler(async (req, res) => {
+  const { id: chatId } = req.params;
 
   const chat = await Chat.aggregate([
     {
-      $match:{
-        _id: new mongoose.Types.ObjectId(chatId)
-      }
+      $match: {
+        _id: new mongoose.Types.ObjectId(chatId),
+        isRoomChat: true,
+      },
     },
-    ...commonChatAggregation()
-  ])
+    ...commonChatAggregation(),
+  ]);
 
-  const payload = chat[0]
+  const payload = chat[0];
 
-  if(!payload){
-    throw new ApiError(404, "Chat does not exist")
+  if (!payload) {
+    throw new ApiError(404, "The Room does not exist.");
   }
 
-  await Chat.findByIdAndDelete(chatId)
+  if (payload.admin?.toString() !== req.user?._id.toString()) {
+    throw new ApiError(409, "You are not a admin");
+  }
 
-  const otherParticipants = payload.participants?.find(item => item._id.toString() !== req.user?._id.toString())
+  await Chat.findByIdAndDelete(chatId);
 
-  emitSocketEvent(req, otherParticipants._id, "leaveChat", payload)
+  payload?.participants.forEach((item) => {
+    if (item._id.toString() === req.user?._id.toString()) return;
 
+    emitSocketEvent(req, item._id, "leaveChat", payload);
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Room deleted successfully"));
+});
 
-  return res.status(200).json(new ApiResponse(200, {}, "Chat deleted successfully"))
+const deleteOneOnOneChat = asyncHandler(async (req, res) => {
+  const { id: chatId } = req.params;
 
-})
+  const chat = await Chat.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(chatId),
+      },
+    },
+    ...commonChatAggregation(),
+  ]);
+
+  const payload = chat[0];
+
+  if (!payload) {
+    throw new ApiError(404, "Chat does not exist");
+  }
+
+  await Chat.findByIdAndDelete(chatId);
+
+  const otherParticipants = payload.participants?.find(
+    (item) => item._id.toString() !== req.user?._id.toString()
+  );
+
+  emitSocketEvent(req, otherParticipants._id, "leaveChat", payload);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Chat deleted successfully"));
+});
+
+// change room icon
+const changeRoomIcon = asyncHandler(async (req, res) => {
+  const { chatId } = req.params;
+
+  const roomIconLocalPath = req.files?.roomIcon[0].path;
+
+  if (!roomIconLocalPath) {
+    throw new ApiError(400, "File is missing");
+  }
+
+  const uploadedRoomIcon = await uploadOnCloudinary(roomIconLocalPath);
+
+  if (!uploadedRoomIcon) {
+    throw new ApiError(400, "Error to upload on cloudinary");
+  }
+
+  const roomChat = await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      $set: { roomIcon: uploadedRoomIcon.url || "" },
+    },
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, roomChat, "RoomIcon updated successfully"));
+});
 
 export {
   getChatUsers,
-  createOrGetOneOnOneChat,
-  createRoomChat,
   getAllChats,
+  createOrGetOneOnOneChat,
+  deleteOneOnOneChat,
+  changeRoomIcon,
+  createRoomChat,
   getRoomChatDetails,
   renameRoomName,
   addParticipantToRoomChat,
   removeParticipantFromRoomChat,
   deleteRoomChat,
-  deleteOneOnOneChat
 };

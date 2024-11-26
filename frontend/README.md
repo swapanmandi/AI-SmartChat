@@ -26,4 +26,4 @@ VITE_SOCKET_URI =  https://ai-smartchat-backend.onrender.com
 
 # to 
 
-CORS_ORIGIN = 
+CORS_ORIGIN = "https://ai-smartchat.onrender.com",

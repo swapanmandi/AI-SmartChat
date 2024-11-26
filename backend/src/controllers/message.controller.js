@@ -3,8 +3,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Chat } from "../models/chat.model.js";
-import mongoose from "mongoose";
 import { emitSocketEvent } from "../utils/socket.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import mongoose from "mongoose";
 
 // const roomMessage = asyncHandler(async (req, res) => {
 //   const { roomId, message } = req.body;
@@ -66,7 +67,6 @@ const messageCommonAggregation = () => {
               email: 1,
             },
           },
-          
         ],
       },
     },
@@ -80,15 +80,24 @@ const messageCommonAggregation = () => {
   ];
 };
 
-
 //send messages
 
 const sendMessage = asyncHandler(async (req, res) => {
   const { id: chatId } = req.params;
-  console.log("chatid", chatId);
+
   const { content } = req.body;
 
-  if (!content) {
+  let imageLocalPath;
+
+  if (
+    req.files &&
+    Array.isArray(req.files.image) &&
+    req.files.image.length > 0
+  ) {
+    imageLocalPath = req.files?.image[0]?.path;
+  }
+
+  if (!content && !imageLocalPath) {
     throw new ApiError(400, "Message Field is Required");
   }
 
@@ -97,10 +106,17 @@ const sendMessage = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Chat does not exist.");
   }
 
-  console.log("userid", req.user?._id.toString());
+  const uploadedImage = await uploadOnCloudinary(imageLocalPath);
+  //console.log("i url", uploadedImage);
+
+  //console.log("userid", req.user?._id.toString());
   const message = await Message.create({
     sender: req.user?._id,
     content: content || "",
+    attachments: {
+      url: uploadedImage?.url || "",
+      localPath: imageLocalPath || "",
+    },
     chat: chatId,
   });
 
@@ -142,18 +158,19 @@ const sendMessage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, receivedMessage, "Message saved successfully"));
 });
 
-
 //get messages
 
 const getMessages = asyncHandler(async (req, res) => {
   const { id: chatId } = req.params;
+
+  //console.log("msg chat id:", chatId)
 
   const selectedChat = await Chat.findById(chatId);
   if (!selectedChat) {
     throw new ApiError(404, "Chat does not exist");
   }
 
-  if (!(selectedChat.participants?.includes(req.user?._id))) {
+  if (!selectedChat.participants?.includes(req.user?._id)) {
     throw new ApiError(400, "You are not a part of this chat");
   }
 
@@ -176,43 +193,43 @@ const getMessages = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, messages, "All Messages Fetched Successfully"));
 });
 
-
 // delete messages
 
-const deleteMessage = asyncHandler(async(req, res) =>{
-  const {chatId, messageId} = req.params
+const deleteMessage = asyncHandler(async (req, res) => {
+  const { chatId, messageId } = req.params;
 
   const chat = await Chat.findOne({
     _id: chatId,
-    participants: req.user?._id
-  })
+    participants: req.user?._id,
+  });
 
-  if(!chat){
-    throw new ApiError(404, "Chat does not exist")
+  if (!chat) {
+    throw new ApiError(404, "Chat does not exist");
   }
 
   const message = await Message.findOne({
-    _id: messageId
-  })
+    _id: messageId,
+  });
 
-  if(!message){
-    throw new ApiError(404, "Message does not exist")
+  if (!message) {
+    throw new ApiError(404, "Message does not exist");
   }
 
- 
-  if(message.sender.toString() !== req.user?._id.toString()){
-throw new ApiError(403, "You are not a sender")
+  if (message.sender.toString() !== req.user?._id.toString()) {
+    throw new ApiError(403, "You are not a sender");
   }
 
   await Message.deleteOne({
-    _id: messageId
-  })
+    _id: messageId,
+  });
 
-chat.participants.forEach(item => {
-  emitSocketEvent(req, item.toString(), "messageDelete", message)
-})
+  chat.participants.forEach((item) => {
+    emitSocketEvent(req, item.toString(), "messageDelete", message);
+  });
 
-return res.status(200).json(new ApiResponse(200, message, "Message Delete Successfully"))
-})
+  return res
+    .status(200)
+    .json(new ApiResponse(200, message, "Message Delete Successfully"));
+});
 
 export { sendMessage, getMessages, deleteMessage };

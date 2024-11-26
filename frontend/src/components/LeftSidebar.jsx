@@ -1,25 +1,27 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useUser } from "../store/UserContext.jsx";
 import { AuthContext } from "../store/AuthContext.jsx";
+import { useDispatch, useSelector } from "react-redux";
+import { setOneOnOneChatInfo } from "../store/chatSlice.js";
 
-export default function LeftSidebar({
-  setClickedMobChat,
-  TotalUnreadMessages,
-  newMessageCID,
-}) {
+export default function LeftSidebar({ setClickedMobChat }) {
   const [isClickedCreateBtn, setIsClickedCreateBtn] = useState(false);
   const [isClickedCreateRoom, setIsClickedCreateRoom] = useState(false);
   const [selectUser, setSelectUser] = useState([]);
   const [roomName, setRoomName] = useState("");
   const [chats, setChats] = useState(null);
-  const [isClickedChatId, setIsClickedChatId] = useState("");
+  //const [isClickedChatId, setIsClickedChatId] = useState(false);
 
   const { userList, getUserList } = useUser();
   const { user } = useContext(AuthContext);
 
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const unreadMessages = useSelector((state) => state.chat.unreadMessages);
+
+  console.log("unread", unreadMessages);
 
   //delete chat
   const handleChatDelete = async (item) => {
@@ -59,6 +61,8 @@ export default function LeftSidebar({
     }
   };
 
+  // create room chat
+
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     const result = await axios.post(
@@ -72,6 +76,8 @@ export default function LeftSidebar({
     setIsClickedCreateRoom(false);
     setIsClickedCreateBtn(false);
   };
+
+  // fetch chat list
 
   useEffect(() => {
     const chats = async () => {
@@ -90,6 +96,8 @@ export default function LeftSidebar({
 
   const messageRef = useRef();
 
+  // create oneonone chat
+
   const createChat = async (rid) => {
     try {
       if (rid) {
@@ -100,7 +108,9 @@ export default function LeftSidebar({
             withCredentials: true,
           }
         );
-        navigate(`/app/chat/${result.data.data?._id}/${rid}`);
+        dispatch(setOneOnOneChatInfo(result.data.data));
+        console.log("c info", result.data.data);
+        // navigate(`/app/chat/${result.data.data?._id}/${rid}`);
         setIsClickedCreateBtn(false);
       }
     } catch (error) {
@@ -108,9 +118,10 @@ export default function LeftSidebar({
     }
   };
 
-  const handleClickedChat = (mId) => {
-    setIsClickedChatId(mId);
+  const handleClickedChat = (pid) => {
     setClickedMobChat(true);
+    //setIsClickedChatId(true);
+    createChat(pid);
   };
 
   //console.log(isClickedChatId);
@@ -219,53 +230,65 @@ export default function LeftSidebar({
         {/* CHAT LIST */}
         <div className=" p-1 overflow-y-auto overflow-x-hidden ">
           {chats?.map((item, index) => (
-            <div key={item._id} className="overflow-hidden">
+            <div
+              onClick={() => handleClickedChat()}
+              className="overflow-hidden"
+            >
               {item.isRoomChat ? (
                 <Link to={`/app/room-chat/${item._id}`}>
-                  <div
-                    onClick={() => handleClickedChat(item._id)}
-                    className={` mb-2 rounded-md p-1 ${
-                      isClickedChatId == item._id
-                        ? " bg-red-400"
-                        : "bg-slate-900"
-                    }`}
-                  >
+                  <div className={` mb-2 rounded-md p-1 bg-slate-900`}>
                     {item.name}
-                    {newMessageCID === item._id && (
-                      <span>{TotalUnreadMessages}</span>
-                    )}
+
+                    {Array.isArray(unreadMessages) &&
+                      (() => {
+                        const unreadCount = unreadMessages.filter(
+                          (n) => n.chat === item._id
+                        ).length;
+                        return (
+                          unreadCount > 0 && (
+                            <span className="bg-slate-400 min-w-6 px-1 h-6 text-center rounded-full">
+                              {unreadCount}
+                            </span>
+                          )
+                        );
+                      })()}
                   </div>
                 </Link>
               ) : (
                 item.participants.map(
                   (participant) =>
                     participant?._id !== user?._id && (
-                      <div key={participant._id} className=" w-full">
+                      <div
+                        onClick={() => handleClickedChat(participant._id)}
+                        key={participant._id}
+                        className=" w-full"
+                      >
                         <Link to={`/app/chat/${item._id}/${participant._id}`}>
                           <div
-                            onClick={() => handleClickedChat(item._id)}
                             ref={messageRef}
-                            className={` mb-2 cursor-pointer bg-slate-900 p-1 rounded-md ${
-                              isClickedChatId == item._id
-                                ? " bg-red-400"
-                                : "bg-slate-900"
-                            }`}
+                            className={` mb-2 cursor-pointer bg-slate-900 flex justify-between lg:pr-7 p-1 rounded-md `}
                           >
-                            {participant.fullName}
-                            {newMessageCID === item._id && (
-                              <span>{TotalUnreadMessages}</span>
-                            )}
+                            <span>{participant.fullName}</span>
+
+                            {Array.isArray(unreadMessages) &&
+                              (() => {
+                                const unreadCount = unreadMessages.filter(
+                                  (n) => n.chat === item._id
+                                ).length;
+                                return (
+                                  unreadCount > 0 && (
+                                    <span className="bg-slate-400 min-w-6 px-1 h-6 text-center rounded-full">
+                                      {unreadCount}
+                                    </span>
+                                  )
+                                );
+                              })()}
                           </div>
                         </Link>
                       </div>
                     )
                 )
               )}
-
-              {/* <button
-                onClick={() => handleChatDelete(item._id)}
-                className=" px-2 mx-3"
-              > Delete Chat</button> */}
             </div>
           ))}
         </div>

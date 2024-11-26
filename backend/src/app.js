@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { Server } from "socket.io";
 import { initializeSocketIO } from "./utils/socket.js";
 import chatRouter from "./routes/chat.route.js";
@@ -19,7 +19,7 @@ const server = createServer(app);
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "https://ai-smartchat.onrender.com",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   },
 });
@@ -31,7 +31,7 @@ initializeSocketIO(io);
 
 app.use(
   cors({
-    origin: "https://ai-smartchat.onrender.com",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 );
@@ -51,5 +51,5 @@ app.use("/api/v1/chat-app/chats", chatRouter);
 app.use("/api/v1/chat-app/messages", messageRouter);
 
 app.use("/api/v1/chat-app/ai-chats", aiChatRouter);
-app.use("/api/v1/chat-app/ai-messages", aiMessageRouter)
+app.use("/api/v1/chat-app/ai-messages", aiMessageRouter);
 export { server };

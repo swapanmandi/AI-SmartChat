@@ -1,0 +1,55 @@
+import express from "express";
+import cors from "cors";
+import { createServer } from "node:http";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { Server } from "socket.io";
+import { initializeSocketIO } from "./utils/socket.js";
+import chatRouter from "./routes/chat.route.js";
+import userRouter from "./routes/user.route.js";
+import cookieParser from "cookie-parser";
+import aiMessageRouter from "./routes/aiMessage.routes.js";
+import messageRouter from "./routes/message.routes.js";
+import aiChatRouter from "./routes/aiChat.routes.js";
+
+const app = express();
+
+const server = createServer(app);
+
+const io = new Server(server, {
+  pingTimeout: 60000,
+  cors: {
+    origin: "https://ai-smartchat.onrender.com",
+    credentials: true,
+  },
+});
+
+app.set("io", io);
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+initializeSocketIO(io);
+
+app.use(
+  cors({
+    origin: "https://ai-smartchat.onrender.com",
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: "16kb" }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "16kb",
+  })
+);
+
+app.use(cookieParser());
+
+//route declarations
+app.use("/api/v1/chat-app/users", userRouter);
+app.use("/api/v1/chat-app/chats", chatRouter);
+app.use("/api/v1/chat-app/messages", messageRouter);
+
+app.use("/api/v1/chat-app/ai-chats", aiChatRouter);
+app.use("/api/v1/chat-app/ai-messages", aiMessageRouter)
+export { server };

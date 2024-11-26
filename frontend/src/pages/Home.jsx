@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import Chat from "../pages/Chat.jsx";
 import Header from "../components/Header.jsx";
 
 export default function Home() {
-  //const [isOpenedSideNavigation, setIsOpenedSideNavigation] = useState(false);
   const [clickedMobChat, setClickedMobChat] = useState(false);
 
-  console.log("c m status", clickedMobChat)
+  //console.log("c m status", clickedMobChat)
   return (
     <>
       <div className=" h-svh fixed w-screen flex flex-col lg:flex-row">
@@ -16,9 +15,6 @@ export default function Home() {
             clickedMobChat={clickedMobChat}
           />
         </div>
-        {/* <div className={` ${clickedMobChat ? "hidden" : ""} lg:block`}>
-          <LeftSidebar setClickedMobChat={setClickedMobChat} />
-        </div> */}
 
         <div>
           <Chat

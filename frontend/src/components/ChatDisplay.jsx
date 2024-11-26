@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../store/AuthContext.jsx";
 import Loader from "./Loader.jsx";
-import { useSelector } from "react-redux";
 import { useChat } from "../hooks/useChat.js";
 
 export default function ChatDisplay({

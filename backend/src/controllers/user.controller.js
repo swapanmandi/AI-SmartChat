@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -25,8 +26,6 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const signupUser = asyncHandler(async (req, res) => {
   const { fullName, email, password, avatar } = req.body;
 
-  //console.log(req.body);
-
   if ([fullName, email, password].some((item) => item?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
@@ -40,7 +39,7 @@ const signupUser = asyncHandler(async (req, res) => {
     fullName,
     email,
     password,
-    avatar
+    avatar,
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -90,10 +89,10 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "None",
-    //path: '/',
-    maxAge: 7200000,
+    //secure: process.env.NODE_ENV === "production",
+    secure: false,
+    //sameSite: "None",
+    //maxAge: 7200000,
   };
 
   return res
@@ -201,31 +200,57 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, "User Fetched Successfully!"));
 });
 
-
-
 //get all users
-const userList = asyncHandler(async(req, res) =>{
-  const users = await User.find().select(" -refreshToken, -password ")
+const userList = asyncHandler(async (req, res) => {
+  const users = await User.find().select(" -refreshToken, -password ");
 
-  if(!users){
-    throw new ApiError(400, "There is no user")
+  if (!users) {
+    throw new ApiError(400, "There is no user");
   }
 
-  return res.status(200).json(new ApiResponse(200, users, "Users fetched sussessfully."))
-})
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users fetched sussessfully."));
+});
 
+const getUser = asyncHandler(async (req, res) => {
+  const { id: userId } = req.params;
+  const user = await User.findById(userId).select(" -password -refreshToken");
 
-const getUser = asyncHandler(async(req, res) =>{
-const {id: userId} = req.params
-  const user = await User.findById(userId).select(" -password -refreshToken")
-
-  if(!user){
-    throw new ApiError(404, "User does not exist")
+  if (!user) {
+    throw new ApiError(404, "User does not exist");
   }
 
-  return res.status(200).json(new ApiResponse(200, user, "User fetched successfully"))
-})
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User fetched successfully"));
+});
 
+const setAvatarImage = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.files.avatar[0].path;
+
+  if (!avatarLocalPath) {
+    throw new ApiError(404, "File is missing");
+  }
+
+  const uploadedAvatar = await uploadOnCloudinary(avatarLocalPath);
+  //console.log("lp", uploadedAvatar)
+
+  if (!uploadedAvatar) {
+    throw new ApiError(400, "Error to upload file.");
+  }
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: { avatar: uploadedAvatar.url || "" },
+    },
+    { new: true }
+  ).select("-password -refreshToken -role");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "user updated successfully"));
+});
 
 export {
   signupUser,
@@ -234,5 +259,6 @@ export {
   refreshAccessToken,
   getCurrentUser,
   userList,
-  getUser
+  getUser,
+  setAvatarImage,
 };

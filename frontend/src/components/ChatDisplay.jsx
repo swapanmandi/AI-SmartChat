@@ -1,24 +1,23 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useUser } from "../store/UserContext";
 import { AuthContext } from "../store/AuthContext.jsx";
 import Loader from "./Loader.jsx";
+import { useSelector } from "react-redux";
+import { useChat } from "../hooks/useChat.js";
 
 export default function ChatDisplay({
-  oneOnOneChatInfo,
-  handleDeleteOnOneChat,
-  setIsClickedAiChat,
-  loading,
   messages,
-  cid,
-  handleChatQuery,
-  deleteMessage,
+  setIsClickedAiChat,
+  setChatQuery,
 }) {
   const [selectMessageId, setSelectMessageId] = useState("");
   const [viewMessageOptions, setViewMessageOptions] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  const { user } = useContext(AuthContext);
-  const { userList, getUserList } = useUser();
+  const { user, loading } = useContext(AuthContext);
+
+  //console.log("messages", messages)
+
+  const { handleDeleteMessage } = useChat();
 
   const timeFormat = (e) => {
     const date = new Date(e);
@@ -56,9 +55,14 @@ export default function ChatDisplay({
         console.log("Error to copy text!", err);
       });
   };
-  const handleDeleteMessage = (id) => {
-    deleteMessage(id);
+  const handleMessageDelete = (id) => {
+    handleDeleteMessage(id);
     setViewMessageOptions(false);
+  };
+
+  const handleChatQuery = (cq) => {
+    setChatQuery(`${cq} : `);
+    setIsClickedAiChat(true);
   };
 
   // console.log("messages",messages)
@@ -71,18 +75,20 @@ export default function ChatDisplay({
       ) : (
         <>
           {messages?.length > 0 ? (
-            messages?.map((item) => (
+            messages?.map((item, index) => (
               <div
-                key={item._id}
+                key={index}
                 className={` w-full flex ${
-                  item.sender?._id === user?._id || item.sender?.user === user?._id && "justify-end"
+                  item.sender?._id === user?._id ||
+                  (item.sender?.user === user?._id && "justify-end")
                 }`}
               >
                 {/* {console.log(item.sender?._id, user.cid)} */}
                 <div className=" h-fit w-fit text-black m-2 flex justify-between">
                   <span
                     className={` ${
-                      item.sender?._id === user?._id || item.sender?.user === user?._id && "hidden"
+                      item.sender?._id === user?._id ||
+                      (item.sender?.user === user?._id && "hidden")
                     } bg-slate-400 h-8 w-8 rounded-full p-1 m-1`}
                   >
                     {item.sender?.fullName}
@@ -92,6 +98,14 @@ export default function ChatDisplay({
                     onClick={() => clickedOnMessage(item._id)}
                     className=" bg-slate-50 rounded-md p-1 m-1 cursor-pointers flex flex-col"
                   >
+                    {item.attachments.length > 0 &&
+                      item.attachments?.map((item) => (
+                        <div>
+                          {item.url && (
+                            <img className=" w-32 h-32" src={item.url}></img>
+                          )}
+                        </div>
+                      ))}
                     <p>{item.content}</p>
                     <span className=" text-end text-xs">
                       {timeFormat(item.createdAt)}
@@ -114,7 +128,7 @@ export default function ChatDisplay({
                           Ask to Ai
                         </span>
                         <span
-                          onClick={() => handleDeleteMessage(item._id)}
+                          onClick={() => handleMessageDelete(item._id)}
                           className=" cursor-pointer"
                         >
                           Delete

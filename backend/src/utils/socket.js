@@ -2,39 +2,39 @@ import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import { ApiError } from "./ApiError.js";
 import { User } from "../models/user.model.js";
-import { Server, Socket } from "socket.io";
 
 const mountJoinChatEvent = (socket) => {
   socket.on("joinChat", (chatId) => {
     socket.join(chatId);
-    console.log(`${chatId} is opened a chat`)
+    console.log(`${chatId} is opened a chat`);
   });
 };
 
 const mountJoinAiChatEvent = (socket) => {
   socket.on("joinAiChat", (aiChatId) => {
     socket.join(aiChatId);
-    console.log(`${aiChatId} is opened for ai chat`)
+    console.log(`${aiChatId} is opened for ai chat`);
   });
 };
 
 const mountTypingEvent = (socket) => {
-  socket.on("typing", ({chatId,userName}) => {
-    socket.in(chatId).emit("typing", {chatId, userName});
-    console.log(userName, " is typing")
+  socket.on("messageTyping", (chatId) => {
+    // Emit the "typing" event to the specific chat room
+    socket.in(chatId).emit("messageTyping", chatId);
+    console.log(chatId, "is typing in chat..");
   });
 };
 
 const mountStoppedTypingEvent = (socket) => {
-  socket.on("stoppedTyping", ({chatId, userName}) => {
-    socket.in(chatId).emit("stoppedTyping", {chatId, userName});
-    console.log("someone is stopped typing")
+  socket.on("stoppedTyping", (chatId) => {
+    // Emit the "stoppedTyping" event to the specific chat room
+    socket.to(chatId).emit("stoppedTyping", chatId);
+    console.log("stopped typing in chat", chatId);
   });
 };
 
 const initializeSocketIO = (io) => {
   return io.on("connection", async (socket) => {
-    
     try {
       const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
 
@@ -45,7 +45,10 @@ const initializeSocketIO = (io) => {
       }
 
       if (!token) {
-        ApiError(400, "Un-authorized Access! Access Token is Missing.");
+        throw new ApiError(
+          400,
+          "Un-authorized Access! Access Token is Missing."
+        );
       }
 
       const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -55,19 +58,22 @@ const initializeSocketIO = (io) => {
       );
 
       if (!user) {
-        ApiError(404, "Un-authorized Access! Access Token is Missing.");
+        throw new ApiError(
+          404,
+          "Un-authorized Access! Access Token is Missing."
+        );
       }
 
       socket.user = user;
 
-
       socket.join(user?._id.toString());
-      socket.emit("connected", () =>{
+      socket.emit(
+        "connected",
         console.log(`user ${user?.fullName} is connected`)
-      });
+      );
 
       mountJoinChatEvent(socket);
-      mountJoinAiChatEvent(socket)
+      mountJoinAiChatEvent(socket);
       mountTypingEvent(socket);
       mountStoppedTypingEvent(socket);
 
@@ -83,9 +89,9 @@ const initializeSocketIO = (io) => {
         "SocketError",
         error?.message || "Error while connect to socket."
       );
+      return;
     }
   });
-
 };
 
 const emitSocketEvent = (req, userId, event, payload) => {

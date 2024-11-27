@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../store/AuthContext.jsx";
 import Loader from "./Loader.jsx";
 import { useChat } from "../hooks/useChat.js";
@@ -15,6 +15,7 @@ export default function ChatDisplay({
   const [isCopied, setIsCopied] = useState(false);
 
   const { user, loading } = useContext(AuthContext);
+  const lastMessageRef = useRef(null);
 
   console.log("messages", messages);
   console.log("user", user);
@@ -67,6 +68,12 @@ export default function ChatDisplay({
     setIsClickedAiChat(true);
   };
 
+  useEffect(() => {
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behaviour: "smooth" });
+    }
+  }, [messages]);
+
   // console.log("messages",messages)
   //console.log("istyping", isTyping);
 
@@ -100,6 +107,7 @@ export default function ChatDisplay({
                   <div
                     onClick={() => clickedOnMessage(item._id)}
                     className=" max-w-[75%] bg-slate-100 rounded-md p-1 m-1 cursor-pointers flex flex-col"
+                    ref={index === messages.length - 1 ? lastMessageRef : null}
                   >
                     <h3
                       className={`text-xs ${

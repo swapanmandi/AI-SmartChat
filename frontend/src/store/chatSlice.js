@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   chatId: "",
+  aiChatId:"",
   messages: [],
   aiMessages: [],
   unreadMessages: [],
@@ -16,6 +17,9 @@ const chatSlice = createSlice({
   reducers: {
     setChatId: (state, action) => {
       state.chatId = action.payload;
+    },
+    setAiChatId: (state, action)=>{
+      state.aiChatId = action.payload
     },
     setMessages: (state, action) => {
       state.messages = action.payload;
@@ -55,6 +59,7 @@ const chatSlice = createSlice({
 
 export const {
   setChatId,
+  setAiChatId,
   setMessages,
   setAiMessages,
   setIsLoading,

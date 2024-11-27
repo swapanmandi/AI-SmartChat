@@ -9,11 +9,13 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   setChatId,
   addMessage,
+  addAiMessage,
   deleteMessage,
   addUnreadMessage,
 } from "../store/chatSlice.js";
 import { useSocket } from "../store/SocketContext.jsx";
 import { useAuth } from "../store/AuthContext.jsx";
+import axios from "axios";
 
 export default function Chat({ clickedMobChat, setClickedMobChat }) {
   const [isClickedAiChat, setIsClickedAiChat] = useState(false);
@@ -32,15 +34,18 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
   const dispatch = useDispatch();
   const { socket } = useSocket();
 
-  const { sendMessage, sendQuery } = useChat();
+  const { sendMessage } = useChat();
   const { user } = useAuth();
 
   const messages = useSelector((state) => state.chat.messages);
   const aiMessages = useSelector((state) => state.chat.aiMessages);
   const chatId = useSelector((state) => state.chat.chatId);
+  const aiChatId = useSelector((state) => state.chat.aiChatId);
 
-  console.log("message", messages);
+  console.log("ai message", aiMessages);
   console.log("current chat id:", chatId);
+  console.log("isClickedAiChat", isClickedAiChat);
+  console.log("ai chat id", aiChatId);
 
   useEffect(() => {
     if (cid) {
@@ -64,7 +69,6 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
   };
 
   const onTyping = (uid) => {
-    
     if (uid) {
       setIsTyping(true);
       setTypingUser(uid);
@@ -113,10 +117,26 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
     setImageUrl("");
   };
 
-  const handleAiMessageSubmit = (e) => {
+  const handleAiMessageSubmit = async (e) => {
     e.preventDefault();
-    sendQuery();
-    setQuery("");
+
+    if (aiChatId) {
+      await axios.post(
+        `${
+          import.meta.env.VITE_BACKEND_API
+        }/ai-messages/send-query/${aiChatId}`,
+        { query },
+        { withCredentials: true }
+      );
+      // setAiMessages((prevMsg) => [...prevMsg, {content: query, sender:{role: "user", user: user._id}}]);
+      dispatch(
+        addAiMessage({
+          content: query,
+          sender: { role: "user", user: user._id },
+        })
+      );
+      setQuery("");
+    }
   };
 
   const onConnect = () => {
@@ -140,6 +160,15 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
     //console.log(newMessage);
   };
 
+  // ai messages receive
+
+  const onAiMessageReceived = (newAiMessage) => {
+    if (newAiMessage) {
+      dispatch(addAiMessage(newAiMessage));
+      console.log("ai msg", newAiMessage)
+    }
+  };
+
   const onMessageDelete = (message) => {
     dispatch(deleteMessage(message._id));
   };
@@ -149,6 +178,7 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
     socket.on("connected", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("messageReceived", onMessageReceived);
+    socket.on("receivedAiMessage", onAiMessageReceived);
     socket.on("messageDelete", onMessageDelete);
     socket.on("messageTyping", onTyping);
     socket.on("stoppedTyping", stoppedTyping);
@@ -156,6 +186,7 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
       socket.off("connected", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("messageReceived", onMessageReceived);
+      socket.off("receivedAiMessage", onAiMessageReceived);
       socket.off("messageDelete", onMessageDelete);
       socket.off("messageTyping", onTyping);
       socket.off("stoppedTyping", stoppedTyping);

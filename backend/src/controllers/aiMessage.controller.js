@@ -44,7 +44,7 @@ const createAiChat = asyncHandler(async (req, res) => {
   
     const { id: aiChatId } = req.params;
     const { query } = req.body;
-    console.log("query:", query)
+    //console.log("ai chat id:", aiChatId)
 
     if (query === "") {
       throw new ApiError(400, "The query field is empty!");

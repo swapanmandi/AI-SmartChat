@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import {
+  setAiChatId,
   addMessage,
   setIsLoading,
   setMessages,
@@ -13,16 +14,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const useChat = () => {
-  const [aiChatId, setAiChatId] = useState("");
-
   const dispatch = useDispatch();
   const { socket } = useSocket();
 
   const navigate = useNavigate();
 
-  //console.log("soc", socket)
-
   const chatId = useSelector((state) => state.chat.chatId);
+  const aiChatId = useSelector((state) => state.chat.aiChatId);
   const unreadMessages = useSelector((state) => state.chat.unreadMessages);
   //console.log("unread msg", unreadMessages);
 
@@ -71,7 +69,7 @@ export const useChat = () => {
           }/ai-messages/get-messages/${aiChatId}`,
           { withCredentials: true }
         );
-
+        console.log("get ai messages", result.data.data);
         dispatch(setAiMessages(result.data.data));
       }
     } catch (error) {
@@ -168,7 +166,7 @@ export const useChat = () => {
     );
   };
 
-  // start ai chat
+  // create ai chat
 
   const createAiChat = async () => {
     //setIsClickedAiChat(true);
@@ -177,21 +175,15 @@ export const useChat = () => {
       {},
       { withCredentials: true }
     );
-    setAiChatId(result.data.data?._id);
+    dispatch(setAiChatId(result.data.data?._id));
   };
 
-  const sendQuery = async () => {
-    if (aiChatId) {
-      await axios.post(
-        `${
-          import.meta.env.VITE_BACKEND_API
-        }/ai-messages/create-chat/${aiChatId}`,
-        { query },
-        { withCredentials: true }
-      );
-      // setAiMessages((prevMsg) => [...prevMsg, {content: query, sender:{role: "user", user: user._id}}]);
-    }
-  };
+    const handleClickedAiChat = () => {
+     
+      dispatch(setAiMessages([]));
+      createAiChat();
+      fetchAiChatMessages();
+    };
 
   // Fetch Messages
   useEffect(() => {
@@ -205,8 +197,6 @@ export const useChat = () => {
     handleDeleteOnOneChat,
     handleRenameRoom,
     removeUser,
-    createAiChat,
-    fetchAiChatMessages,
-    sendQuery,
+    handleClickedAiChat
   };
 };

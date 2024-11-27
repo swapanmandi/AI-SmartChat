@@ -28,15 +28,14 @@ export default function ChatHeader({
     typingUser,
     getRoomInfo,
     handleDeleteOnOneChat,
-    createAiChat,
-    fetchAiChatMessages,
+    handleClickedAiChat,
   } = useChat();
 
   const roomInfo = useSelector((state) => state.chat.roomInfo);
   const chatId = useSelector((state) => state.chat.chatId);
   const oneOnOneChatInfo = useSelector((state) => state.chat.oneOnOneChatInfo);
 
-  console.log("single chat profile", oneOnOneChatInfo);
+  //console.log("single chat profile", oneOnOneChatInfo);
 
   const clickedonAddUser = () => {
     setIsClickedOnAddUser(true);
@@ -323,13 +322,15 @@ export default function ChatHeader({
     }
   };
 
-  // create ai chat
-
-  const handleClickedAiChat = () => {
+  const handleClickedAiChatBtn = () => {
     setIsClickedAiChat(true);
-    fetchAiChatMessages();
-    createAiChat();
   };
+
+  useEffect(() => {
+    if (isClickedAiChat) {
+      handleClickedAiChat();
+    }
+  }, [chatId]);
 
   const handleClickedChat = () => {
     setIsClickedAiChat(false);
@@ -374,7 +375,7 @@ export default function ChatHeader({
 
         {/* AI CHAT */}
         <div
-          onClick={handleClickedAiChat}
+          onClick={handleClickedAiChatBtn}
           className={`min-h-full w-1/2 flex justify-center items-center ${
             isClickedAiChat ? "bg-orange-400" : " bg-slate-950"
           } `}

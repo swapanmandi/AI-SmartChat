@@ -18,7 +18,7 @@ const mountJoinAiChatEvent = (socket) => {
 };
 
 const mountTypingEvent = (socket) => {
-  socket.on("messageTyping", (chatId) => {
+  socket.on("startTyping", (chatId) => {
     // Emit the "typing" event to the specific chat room
     socket.in(chatId).emit("messageTyping", chatId);
     console.log(chatId, "is typing in chat..");

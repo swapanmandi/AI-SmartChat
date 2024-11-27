@@ -4,9 +4,11 @@ import Loader from "./Loader.jsx";
 import { useChat } from "../hooks/useChat.js";
 
 export default function ChatDisplay({
+  isTyping,
   messages,
-  setIsClickedAiChat,
+  typingUser,
   setChatQuery,
+  setIsClickedAiChat,
 }) {
   const [selectMessageId, setSelectMessageId] = useState("");
   const [viewMessageOptions, setViewMessageOptions] = useState(false);
@@ -65,14 +67,14 @@ export default function ChatDisplay({
   };
 
   // console.log("messages",messages)
-  // console.log("user id", user._id)
+  console.log("istyping", isTyping);
 
   return (
     <div className=" bg-orange-400 h-[81%] overflow-y-scroll pb-10">
       {loading ? (
         <Loader />
       ) : (
-        <>
+        <div>
           {messages?.length > 0 ? (
             messages?.map((item, index) => (
               <div
@@ -110,6 +112,7 @@ export default function ChatDisplay({
                       {timeFormat(item.createdAt)}
                     </span>
                   </div>
+
                   <div className="">
                     {selectMessageId === item._id && viewMessageOptions && (
                       <div className=" space-x-2 bg-yellow-400 flex flex-col rounded-md p-1 space-y-2">
@@ -141,7 +144,16 @@ export default function ChatDisplay({
           ) : (
             <div>No Chats</div>
           )}
-        </>
+
+          {isTyping && (
+            <div className=" h-fit w-fit text-black m-2 flex justify-between">
+              <span className="bg-slate-400 h-8 w-8 rounded-full p-1 m-1"></span>
+              <div className="bg-slate-50 rounded-md p-1 m-1 cursor-pointers flex flex-col">
+                <span className=" w-8 text-center animate-bounce">...</span>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

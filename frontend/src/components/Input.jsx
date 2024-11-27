@@ -9,6 +9,7 @@ export default function Input({
   onSubmit,
   onchangeAddImage,
   imageUrl,
+  typingTimeoutRef
 }) {
   const [isClickedAddFile, setIsClickedAddFile] = useState(false);
 
@@ -109,6 +110,7 @@ export default function Input({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          ref={typingTimeoutRef}
         ></input>
 
         <button

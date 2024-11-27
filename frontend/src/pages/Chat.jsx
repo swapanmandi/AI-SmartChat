@@ -24,7 +24,8 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
   const [imageUrl, setImageUrl] = useState("");
   const [image, setImage] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [typingUser, setTypingUser] = useState([]);
+  const [typingUser, setTypingUser] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
 
   const { cid, rid } = useParams();
   const typingTimeoutRef = useRef(null);
@@ -37,8 +38,9 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
   const messages = useSelector((state) => state.chat.messages);
   const aiMessages = useSelector((state) => state.chat.aiMessages);
   const chatId = useSelector((state) => state.chat.chatId);
-  const unreadMessages = useSelector((state) => state.chat.unreadMessages);
-  //console.log("message", messages);
+
+  console.log("message", messages);
+  console.log("current chat id:", chatId);
 
   useEffect(() => {
     if (cid) {
@@ -52,10 +54,36 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
     } else setQuery("");
   }, [chatQuery]);
 
+  const handleTyping = () => {
+    socket.emit("startTyping", chatId);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stoppedTyping", chatId);
+    }, 1000);
+  };
+
+  const onTyping = (uid) => {
+    
+    if (uid) {
+      setIsTyping(true);
+      setTypingUser(uid);
+    }
+  };
+
+  const stoppedTyping = () => {
+    // const updatedTypingUser = typingUser.filter(
+    //   (item) => item.userName != user.fullName
+    // );
+    // setTypingUser(updatedTypingUser);
+    setIsTyping(false);
+  };
+
   const handleInputChange = (e) => {
-    //if(!socket) return;
     setText(e.target.value);
-    //handleTyping();
+    if (!socket || !isConnected) return;
+
+    handleTyping();
   };
 
   useEffect(() => {
@@ -116,43 +144,21 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
     dispatch(deleteMessage(message._id));
   };
 
-  // const handleTyping = () => {
-  //   socket.emit("messageTyping", chatId);
-  //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
-  //   typingTimeoutRef.current = setTimeout(() => {
-  //     socket.emit("stoppedTyping", chatId);
-  //   }, 1000);
-  // };
-
-  // const onTyping = (data) => {
-  //   console.log(`${data} is typing in chat`);
-  // };
-
-  // const stoppedTyping = () => {
-  //   const updatedTypingUser = typingUser.filter(
-  //     (item) => item.userName != user.fullName
-  //   );
-  //   setTypingUser(updatedTypingUser);
-  // };
-
-  //socket handling
-
   useEffect(() => {
     if (!socket) return;
     socket.on("connected", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("messageReceived", onMessageReceived);
     socket.on("messageDelete", onMessageDelete);
-    // socket.on("messageTyping", onTyping);
-    // socket.on("stoppedTyping", stoppedTyping);
+    socket.on("messageTyping", onTyping);
+    socket.on("stoppedTyping", stoppedTyping);
     return () => {
       socket.off("connected", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("messageReceived", onMessageReceived);
       socket.off("messageDelete", onMessageDelete);
-      // socket.off("messageTyping", onTyping);
-      // socket.off("stoppedTyping", stoppedTyping);
+      socket.off("messageTyping", onTyping);
+      socket.off("stoppedTyping", stoppedTyping);
     };
   }, [socket]);
 
@@ -183,6 +189,8 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
                 messages={messages}
                 setIsClickedAiChat={setIsClickedAiChat}
                 setChatQuery={setChatQuery}
+                isTyping={isTyping}
+                typingUser={typingUser}
               />
 
               <Input
@@ -193,9 +201,11 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
                 onSubmit={handleMessageSubmit}
                 onchangeAddImage={onchangeAddImage}
                 imageUrl={imageUrl}
+                typingTimeoutRef={typingTimeoutRef}
               />
             </div>
           ) : (
+            // Ai Chat
             <div className=" h-svh">
               <ChatDisplay messages={aiMessages} />
               <Input

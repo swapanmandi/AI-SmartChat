@@ -27,7 +27,7 @@ export default function Input({
         onSubmit={onSubmit}
         className=" bg-blue-500 h-full rounded-md flex justify-center items-center  lg:w-2/3"
       >
-        <div className={` pr-5`}>
+        <div className={` pr-5 `}>
           <svg
             onClick={() => setIsClickedAddFile(!isClickedAddFile)}
             xmlns="http://www.w3.org/2000/svg"

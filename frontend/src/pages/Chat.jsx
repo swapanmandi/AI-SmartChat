@@ -16,9 +16,11 @@ import {
 import { useSocket } from "../store/SocketContext.jsx";
 import { useAuth } from "../store/AuthContext.jsx";
 import axios from "axios";
+import Header from "../components/Header.jsx";
 
-export default function Chat({ clickedMobChat, setClickedMobChat }) {
+export default function Chat() {
   const [isClickedAiChat, setIsClickedAiChat] = useState(false);
+  const [clickedMobChat, setClickedMobChat] = useState(false);
   const [text, setText] = useState("");
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
@@ -194,7 +196,14 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
   }, [socket]);
 
   return (
-    <div className=" flex h-svh w-svw">
+    <div className=" flex h-svh w-svw fixed">
+      <div>
+      <Header
+       setClickedMobChat={setClickedMobChat}
+       clickedMobChat={clickedMobChat}
+      />
+      </div>
+     
       <div
         className={` ${
           clickedMobChat ? "hidden" : ""
@@ -203,7 +212,7 @@ export default function Chat({ clickedMobChat, setClickedMobChat }) {
         <LeftSidebar setClickedMobChat={setClickedMobChat} />
       </div>
       <div
-        className={` bg-slate-900 h-full w-full  ${
+        className={` bg-slate-900 h-full w-full lg:w-[70%]  ${
           clickedMobChat ? "block" : "hidden"
         } lg:block`}
       >

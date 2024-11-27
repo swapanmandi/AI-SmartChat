@@ -3,13 +3,13 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import "./index.css";
 import PublicHome from "./pages/PublicHome.jsx";
-import Home from "./pages/Home.jsx";
 import App from "./App.jsx";
 import Login from "./pages/Login.jsx";
 import { AuthProvider } from "./store/AuthContext.jsx";
 import { Provider } from "react-redux";
 import { store } from "./store/store.js";
 import LeftSidebar from "./components/LeftSidebar.jsx";
+import Chat from "./pages/Chat.jsx";
 
 const Signup = lazy(() => import("./pages/Signup.jsx"));
 
@@ -48,15 +48,15 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/chat/:cid/:rid",
-        element: <Home />,
+        element: <Chat />,
       },
       {
         path: "/app/room-chat/:cid",
-        element: <Home />,
+        element: <Chat />,
       },
       {
         path: "/app/chat/:cid/:rid/:cq",
-        element: <Home />,
+        element: <Chat />,
       },
     ],
   },

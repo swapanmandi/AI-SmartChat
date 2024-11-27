@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import {
+  addMessage,
   setIsLoading,
   setMessages,
   setAiMessages,
@@ -96,6 +97,7 @@ export const useChat = () => {
           },
         }
       );
+      dispatch(addMessage(result.data.data));
     } catch (error) {
       console.error("Error sending message:", error);
     }

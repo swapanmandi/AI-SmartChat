@@ -16,7 +16,8 @@ export default function ChatDisplay({
 
   const { user, loading } = useContext(AuthContext);
 
-  //console.log("messages", messages)
+  console.log("messages", messages);
+  console.log("user", user);
 
   const { handleDeleteMessage } = useChat();
 
@@ -67,39 +68,50 @@ export default function ChatDisplay({
   };
 
   // console.log("messages",messages)
-  console.log("istyping", isTyping);
+  //console.log("istyping", isTyping);
 
   return (
-    <div className=" bg-orange-400 h-[81%] overflow-y-scroll pb-10">
+    <div className=" bg-orange-400 h-[81%] overflow-y-scroll overflow-x-hidden pb-10">
       {loading ? (
         <Loader />
       ) : (
         <div>
           {messages?.length > 0 ? (
             messages?.map((item, index) => (
-              <div
-                key={index}
-                className={` w-full flex ${
-                  item.sender?._id === user?._id ||
-                  (item.sender?.user === user?._id && "justify-end")
-                }`}
-              >
+              <div key={index} className=" w-full">
                 {/* {console.log(item.sender?._id, user.cid)} */}
-                <div className=" h-fit w-fit text-black m-2 flex justify-between">
-                  <span
+
+                <div
+                  className={` w-full text-black p-2 flex ${
+                    (item.sender?._id === user?._id ||
+                      item.sender?.user === user?._id) &&
+                    "justify-end"
+                  }`}
+                >
+                  <img
+                    src={item.sender?.avatar}
                     className={` ${
-                      item.sender?._id === user?._id ||
-                      (item.sender?.user === user?._id && "hidden")
-                    } bg-slate-400 h-8 w-8 rounded-full p-1 m-1`}
-                  >
-                    {item.sender?.fullName}
-                  </span>
+                      (item.sender?._id === user?._id ||
+                        item.sender?.user === user?._id) &&
+                      "hidden"
+                    } h-8 w-8 rounded-full m-1`}
+                  ></img>
 
                   <div
                     onClick={() => clickedOnMessage(item._id)}
-                    className=" bg-slate-50 rounded-md p-1 m-1 cursor-pointers flex flex-col"
+                    className=" max-w-[75%] bg-slate-100 rounded-md p-1 m-1 cursor-pointers flex flex-col"
                   >
-                    {item.attachments.length > 0 &&
+                    <h3
+                      className={`text-xs ${
+                        (item.sender?._id === user?._id ||
+                          item.sender?.user === user?._id) &&
+                        "hidden"
+                      }`}
+                    >
+                      {item.sender?.fullName}
+                      {item.sender?.user === null ? "AI ~" : "~"}
+                    </h3>
+                    {item.attachments?.length > 0 &&
                       item.attachments?.map((item) => (
                         <div>
                           {item.url && (
@@ -107,7 +119,7 @@ export default function ChatDisplay({
                           )}
                         </div>
                       ))}
-                    <p>{item.content}</p>
+                    <p className="">{item.content}</p>
                     <span className=" text-end text-xs">
                       {timeFormat(item.createdAt)}
                     </span>

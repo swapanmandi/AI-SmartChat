@@ -148,7 +148,7 @@ const sendMessage = asyncHandler(async (req, res) => {
   }
 
   chat.participants.forEach((item) => {
-    //if (item.toString() === req.user?._id.toString()) return;
+    if (item.toString() === req.user?._id.toString()) return;
 
     emitSocketEvent(req, item.toString(), "messageReceived", receivedMessage);
   });

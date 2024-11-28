@@ -84,83 +84,93 @@ export default function ChatDisplay({
       ) : (
         <div>
           {messages?.length > 0 ? (
-            messages?.map((item, index) => (
-              <div key={index} className=" w-full">
-                {/* {console.log(item.sender?._id, user.cid)} */}
+            messages?.map((item, index) => {
+              const showSender =
+                index === 0 ||
+                messages[index - 1]?.sender?._id !== item.sender?._id;
 
-                <div
-                  className={` w-full text-black p-2 flex ${
-                    (item.sender?._id === user?._id ||
-                      item.sender?.user === user?._id) &&
-                    "justify-end"
-                  }`}
-                >
-                  <img
-                    src={item.sender?.avatar}
-                    className={` ${
-                      (item.sender?._id === user?._id ||
-                        item.sender?.user === user?._id) &&
-                      "hidden"
-                    } h-8 w-8 rounded-full m-1`}
-                  ></img>
+              return (
+                <div key={index} className=" w-full">
+                  {/* {console.log(item.sender?._id, user.cid)} */}
 
                   <div
-                    onClick={() => clickedOnMessage(item._id)}
-                    className=" max-w-[75%] bg-slate-100 rounded-md p-1 m-1 cursor-pointers flex flex-col"
-                    ref={index === messages.length - 1 ? lastMessageRef : null}
+                    className={` w-full text-black p-2 flex ${
+                      (item.sender?._id === user?._id ||
+                        item.sender?.user === user?._id) &&
+                      "justify-end"
+                    }`}
                   >
-                    <h3
-                      className={`text-xs ${
+                    <img
+                      src={item.sender?.avatar}
+                      className={` ${
                         (item.sender?._id === user?._id ||
                           item.sender?.user === user?._id) &&
                         "hidden"
-                      }`}
-                    >
-                      {item.sender?.fullName}
-                      {item.sender?.user === null ? "AI ~" : "~"}
-                    </h3>
-                    {item.attachments?.length > 0 &&
-                      item.attachments?.map((item) => (
-                        <div>
-                          {item.url && (
-                            <img className=" w-32 h-32" src={item.url}></img>
-                          )}
-                        </div>
-                      ))}
-                    <p className="">{item.content}</p>
-                    <span className=" text-end text-xs">
-                      {timeFormat(item.createdAt)}
-                    </span>
-                  </div>
+                      } ${
+                        showSender ? "block" : "invisible"
+                      } h-8 w-8 rounded-full m-1`}
+                    ></img>
 
-                  <div className="">
-                    {selectMessageId === item._id && viewMessageOptions && (
-                      <div className=" space-x-2 bg-yellow-400 flex flex-col rounded-md p-1 space-y-2">
-                        <span
-                          onClick={() => copyToClipboard(item.content)}
-                          className=" cursor-pointer"
-                        >
-                          {isCopied ? "Copied" : "Copy"}
-                        </span>
-                        <span className=" cursor-pointer">Share</span>
-                        <span
-                          onClick={() => handleChatQuery(item.content)}
-                          className=" cursor-pointer"
-                        >
-                          Ask to Ai
-                        </span>
-                        <span
-                          onClick={() => handleMessageDelete(item._id)}
-                          className=" cursor-pointer"
-                        >
-                          Delete
-                        </span>
-                      </div>
-                    )}
+                    <div
+                      onClick={() => clickedOnMessage(item._id)}
+                      className=" max-w-[75%] bg-slate-100 rounded-md p-1 m-1 cursor-pointers flex flex-col"
+                      ref={
+                        index === messages.length - 1 ? lastMessageRef : null
+                      }
+                    >
+                      <h3
+                        className={`text-xs ${
+                          (item.sender?._id === user?._id ||
+                            item.sender?.user === user?._id) &&
+                          "hidden"
+                        } ${showSender ? "block" : "invisible"}`}
+                      >
+                        {item.sender?.fullName}
+                        {item.sender?.user === null ? "AI ~" : "~"}
+                      </h3>
+                      {item.attachments?.length > 0 &&
+                        item.attachments?.map((item) => (
+                          <div>
+                            {item.url && (
+                              <img className=" w-32 h-32" src={item.url}></img>
+                            )}
+                          </div>
+                        ))}
+                      <p className="">{item.content}</p>
+                      <span className=" text-end text-xs">
+                        {timeFormat(item.createdAt)}
+                      </span>
+                    </div>
+
+                    <div className="">
+                      {selectMessageId === item._id && viewMessageOptions && (
+                        <div className=" space-x-2 bg-yellow-400 flex flex-col rounded-md p-1 space-y-2">
+                          <span
+                            onClick={() => copyToClipboard(item.content)}
+                            className=" cursor-pointer"
+                          >
+                            {isCopied ? "Copied" : "Copy"}
+                          </span>
+                          <span className=" cursor-pointer">Share</span>
+                          <span
+                            onClick={() => handleChatQuery(item.content)}
+                            className=" cursor-pointer"
+                          >
+                            Ask to Ai
+                          </span>
+                          <span
+                            onClick={() => handleMessageDelete(item._id)}
+                            className=" cursor-pointer"
+                          >
+                            Delete
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div>No Chats</div>
           )}

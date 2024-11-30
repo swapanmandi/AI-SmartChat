@@ -8,16 +8,16 @@ import { SocketProvider } from "./store/SocketContext.jsx";
 
 function App() {
   return (
-    <>
+    <div className=" flex flex-col lg:flex-row h-svh w-svw">
       <SocketProvider>
         <UserContextProvider>
           <AuthProvider>
-            {/* <Header /> */}
+            <Header />
             <Outlet />
           </AuthProvider>
         </UserContextProvider>
       </SocketProvider>
-    </>
+    </div>
   );
 }
 

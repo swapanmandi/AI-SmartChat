@@ -8,8 +8,9 @@ import Login from "./pages/Login.jsx";
 import { AuthProvider } from "./store/AuthContext.jsx";
 import { Provider } from "react-redux";
 import { store } from "./store/store.js";
-import LeftSidebar from "./components/LeftSidebar.jsx";
 import Chat from "./pages/Chat.jsx";
+import Home from "./pages/Home.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 const Signup = lazy(() => import("./pages/Signup.jsx"));
 
@@ -34,29 +35,30 @@ const router = createBrowserRouter([
         path: "/signin",
         element: <Login />,
       },
-    ],
-  },
 
-  {
-    path: "/app",
-    element: <App />,
-
-    children: [
       {
         path: "/app",
-        element: <LeftSidebar />,
-      },
-      {
-        path: "/app/chat/:cid/:rid",
-        element: <Chat />,
-      },
-      {
-        path: "/app/room-chat/:cid",
-        element: <Chat />,
-      },
-      {
-        path: "/app/chat/:cid/:rid/:cq",
-        element: <Chat />,
+        element: <ProtectedRoute />,
+
+        children: [
+          {
+            path: "",
+            element: <Home />,
+          },
+          {
+            path: "/app/chat/:cid/:rid",
+
+            element: <Chat />,
+          },
+          {
+            path: "/app/room-chat/:cid",
+            element: <Chat />,
+          },
+          {
+            path: "/app/chat/:cid/:rid/:cq",
+            element: <Chat />,
+          },
+        ],
       },
     ],
   },

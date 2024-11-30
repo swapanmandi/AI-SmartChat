@@ -9,7 +9,7 @@ export default function Input({
   onSubmit,
   onchangeAddImage,
   imageUrl,
-  typingTimeoutRef
+  typingTimeoutRef,
 }) {
   const [isClickedAddFile, setIsClickedAddFile] = useState(false);
 
@@ -22,12 +22,9 @@ export default function Input({
   };
 
   return (
-    <div className=" h-[10%] flex justify-center items-center rounded-md ">
-      <form
-        onSubmit={onSubmit}
-        className=" bg-blue-500 h-full rounded-md flex justify-center items-center  lg:w-2/3"
-      >
-        <div className={` pr-5 `}>
+    <div className=" w-9/12 bg-blue-500 h-full content-center p-2 px-3">
+      <form onSubmit={onSubmit} className=" flex">
+        <div className={` content-center mr-4`}>
           <svg
             onClick={() => setIsClickedAddFile(!isClickedAddFile)}
             xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +103,7 @@ export default function Input({
 
         <input
           type="text"
-          className=" outline-none line-clamp-3 w-10/12 overflow-y-auto bg-blue-500 text-black"
+          className=" outline-none line-clamp-3 w-10/12 overflow-y-auto bg-blue-500 text-black rounded-md p-1"
           value={value}
           onChange={onChange}
           placeholder={placeholder}

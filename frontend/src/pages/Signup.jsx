@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../store/AuthContext.jsx";
+import { Link } from "react-router-dom";
 
 export default function Signup() {
   const [fullName, setFullName] = useState("");
@@ -7,12 +8,12 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const {signup} = useAuth()
+  const { signup } = useAuth();
 
-  const handleSubmit =  (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     try {
-     const result = signup(fullName, email, password)
+      const result = signup(fullName, email, password);
       setMessage(result?.data?.message);
     } catch (error) {
       setMessage(error.result?.message || "Register error");
@@ -55,14 +56,21 @@ export default function Signup() {
               ></input>
             </label>
 
-            <button className=" w-20 rounded-md p-1 m-3 bg-red-600" type="submit">
+            <button
+              className=" w-20 rounded-md p-1 m-3 bg-red-600"
+              type="submit"
+            >
               Sign Up
             </button>
           </form>
-          <p>Have a ccount? Please Sign In</p>
+          <p>
+            Have a ccount? Please
+            <Link to="/signin">
+              <strong>Sign In</strong>
+            </Link>
+          </p>
           <span className=" mt-5">{message}</span>
         </div>
-       
       </div>
     </>
   );

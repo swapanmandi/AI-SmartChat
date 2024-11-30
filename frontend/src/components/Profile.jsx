@@ -14,8 +14,8 @@ export default function Profile() {
   //console.log("user details", userDetails)
 
   return (
-    <div className="absolute h-svh w-svw flex justify-center items-center">
-      <div className=" bg-slate-600 h-5/6 justify-center p-4 flex rounded-md w-4/12">
+    <div className=" h-full w-full flex justify-center items-center ">
+      <div className=" bg-slate-600 h-5/6 justify-center p-4 flex rounded-md w-1/2">
         <div>
           Profile
           {userDetails ? (

@@ -16,11 +16,9 @@ import {
 import { useSocket } from "../store/SocketContext.jsx";
 import { useAuth } from "../store/AuthContext.jsx";
 import axios from "axios";
-import Header from "../components/Header.jsx";
 
 export default function Chat() {
   const [isClickedAiChat, setIsClickedAiChat] = useState(false);
-  const [clickedMobChat, setClickedMobChat] = useState(false);
   const [text, setText] = useState("");
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
@@ -44,10 +42,9 @@ export default function Chat() {
   const chatId = useSelector((state) => state.chat.chatId);
   const aiChatId = useSelector((state) => state.chat.aiChatId);
 
-  console.log("ai message", aiMessages);
-  console.log("current chat id:", chatId);
-  console.log("isClickedAiChat", isClickedAiChat);
-  console.log("ai chat id", aiChatId);
+  // console.log("ai message", aiMessages);
+  // console.log("current chat id:", chatId);
+  // console.log("ai chat id", aiChatId);
 
   useEffect(() => {
     if (cid) {
@@ -130,7 +127,7 @@ export default function Chat() {
         { query },
         { withCredentials: true }
       );
-      // setAiMessages((prevMsg) => [...prevMsg, {content: query, sender:{role: "user", user: user._id}}]);
+
       dispatch(
         addAiMessage({
           content: query,
@@ -143,17 +140,17 @@ export default function Chat() {
 
   const onConnect = () => {
     setIsConnected(true);
-    console.log(user?.fullName, " is connected to socket");
+    //console.log(user?.fullName, " is connected to socket");
   };
 
   const onDisconnect = () => {
     setIsConnected(false);
-    console.log(user?.fullName, " is disconnected to socket");
+    //console.log(user?.fullName, " is disconnected to socket");
   };
 
   // receive message
   const onMessageReceived = (newMessage) => {
-    console.log("Message received from socket:", newMessage);
+    //console.log("Message received from socket:", newMessage);
     if (newMessage?.chat !== chatId) {
       dispatch(addUnreadMessage(newMessage));
     } else {
@@ -167,7 +164,7 @@ export default function Chat() {
   const onAiMessageReceived = (newAiMessage) => {
     if (newAiMessage) {
       dispatch(addAiMessage(newAiMessage));
-      console.log("ai msg", newAiMessage)
+      console.log("ai msg", newAiMessage);
     }
   };
 
@@ -196,35 +193,24 @@ export default function Chat() {
   }, [socket]);
 
   return (
-    <div className=" flex h-svh w-svw fixed">
-      <div>
-      <Header
-       setClickedMobChat={setClickedMobChat}
-       clickedMobChat={clickedMobChat}
-      />
+    <div className=" h-svh w-full lg:flex overflow-hidden">
+      <div className=" hidden lg:flex lg:w-96">
+        <LeftSidebar />
       </div>
-     
-      <div
-        className={` ${
-          clickedMobChat ? "hidden" : ""
-        } lg:block w-full h-full lg:w-auto`}
-      >
-        <LeftSidebar setClickedMobChat={setClickedMobChat} />
-      </div>
-      <div
-        className={` bg-slate-900 h-full w-full lg:w-[70%]  ${
-          clickedMobChat ? "block" : "hidden"
-        } lg:block`}
-      >
-        <ChatHeader
-          rid={rid}
-          isClickedAiChat={isClickedAiChat}
-          setIsClickedAiChat={setIsClickedAiChat}
-        />
 
-        <div>
-          {!isClickedAiChat ? (
-            <div className=" h-svh">
+      {/* Chat Container */}
+      <div className=" bg-orange-400 flex h-full flex-col w-full">
+        <div className=" h-[8%]">
+          <ChatHeader
+            rid={rid}
+            isClickedAiChat={isClickedAiChat}
+            setIsClickedAiChat={setIsClickedAiChat}
+          />
+        </div>
+
+        {!isClickedAiChat ? (
+          <div className=" bg-slate-950 h-[92%]">
+            <div className=" bg-lime-400 h-[90%]">
               <ChatDisplay
                 messages={messages}
                 setIsClickedAiChat={setIsClickedAiChat}
@@ -232,7 +218,8 @@ export default function Chat() {
                 isTyping={isTyping}
                 typingUser={typingUser}
               />
-
+            </div>
+            <div className=" h-[10%] flex items-center justify-center">
               <Input
                 value={text}
                 onChange={handleInputChange}
@@ -244,10 +231,14 @@ export default function Chat() {
                 typingTimeoutRef={typingTimeoutRef}
               />
             </div>
-          ) : (
-            // Ai Chat
-            <div className=" h-svh">
+          </div>
+        ) : (
+          // Ai Chat
+          <div className=" bg-slate-950 h-[92%]">
+            <div className=" bg-lime-400 h-[90%]">
               <ChatDisplay messages={aiMessages} />
+            </div>
+            <div className=" h-[10%] flex items-center justify-center">
               <Input
                 value={query}
                 onChange={handleQueryChange}
@@ -256,8 +247,8 @@ export default function Chat() {
                 onSubmit={handleAiMessageSubmit}
               />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

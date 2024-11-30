@@ -1,19 +1,11 @@
-import React, { useContext, useEffect } from "react";
-import { Navigate } from "react-router-dom";
-import {AuthContext} from "../store/AuthContext.jsx"
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../store/AuthContext.jsx";
 
+export default function ProtectedRoute() {
+  const { token, user } = useAuth();
+  // console.log("token", token);
+  // console.log("oading", isLoading);
 
-export default function ProtectedRoute({ children }) {
-
-const {loading, isLoggedIn} = useContext(AuthContext)
-
-//console.log(isLoggedIn)
-if(loading){
-  return <div>Loading...</div>
-}
-   if (!isLoggedIn) {
-     return <Navigate to="/signin" />;
-  }
-
-  return children;
+  return token && user?._id ? <Outlet /> : <Navigate to="/signin" />;
 }

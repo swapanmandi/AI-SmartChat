@@ -115,7 +115,7 @@ export default function ChatDisplay({
                       {/* Message Bubble */}
                       <div
                         onClick={() => clickedOnMessage(item._id)}
-                        className="max-w-[75%] bg-slate-100 rounded-md p-2 m-1 cursor-pointer flex flex-col"
+                        className=" relative max-w-[75%] bg-slate-100 rounded-md p-2 m-1 cursor-pointer flex flex-col h-fit"
                         ref={
                           index === messages.length - 1 ? lastMessageRef : null
                         }
@@ -153,9 +153,41 @@ export default function ChatDisplay({
                         <span className="text-end text-xs text-gray-500">
                           {timeFormat(item.createdAt)}
                         </span>
+                        {selectMessageId === item._id && viewMessageOptions && (
+                          <div
+                            className={` absolute w-28  space-x-2 bg-yellow-400 flex flex-col rounded-md p-2 items-center space-y-1 m-1 z-20 ${
+                              item.sender?._id === user?._id ||
+                              item.sender?.user === user?._id
+                                ? "-left-32"
+                                : " left-14"
+                            }`}
+                          >
+                            <span
+                              onClick={() => copyToClipboard(item.content)}
+                              className=" cursor-pointer"
+                            >
+                              {isCopied ? "Copied" : "Copy"}
+                            </span>
+                            <span className=" cursor-pointer">Share</span>
+                            <span
+                              onClick={() => handleChatQuery(item.content)}
+                              className=" cursor-pointer"
+                            >
+                              Ask to Ai
+                            </span>
+                            <span
+                              onClick={() => handleDeleteMessage(item._id)}
+                              className=" cursor-pointer"
+                            >
+                              Delete
+                            </span>
+                          </div>
+                        )}
                       </div>
+                      {/* <div className=" z-10"> */}
                     </div>
                   </div>
+                  // </div>
                 );
               })
             ) : (

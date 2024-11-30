@@ -1,6 +1,5 @@
-import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
-import { Navigate, Link, useNavigate } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../store/AuthContext.jsx";
 
 export default function Login() {
@@ -18,11 +17,9 @@ export default function Login() {
     }
   };
 
-
-
   return (
     <>
-      <div className=" h-screen bg-red-200 flex  justify-center items-center">
+      <div className=" w-full h-screen bg-red-200 flex  justify-center items-center content-center">
         <div className=" p-4 w-11/12 rounded-sm bg-slate-600 lg:h-96 lg:w-3/6 justify-center flex  flex-col text-center lg:items-center">
           <h2>SIGN IN</h2>
           <form
@@ -48,13 +45,18 @@ export default function Login() {
             </label>
 
             <div className=" flex ">
-              {" "}
               <button className=" bg-sky-400 p-1 rounded-md m-3" type="submit">
                 Sign In
               </button>
-             
             </div>
           </form>
+          <h2>
+            Don't have account. Please{" "}
+            <Link to="/signup">
+              <strong>SignUp</strong>
+            </Link>
+            here.
+          </h2>
           <Link to="/">
             <h2>Back To Home Page</h2>
           </Link>

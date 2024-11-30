@@ -185,14 +185,21 @@ const createRoomChat = asyncHandler(async (req, res) => {
     throw new ApiError(400, "You must add atleast 1 friend");
   }
 
-  const roomIconLocalPath = req.files.roomIcon[0].path;
-  console.log(roomIconLocalPath);
+  let roomIconLocalPath;
+
+  if(req.files && Array.isArray(req.files.roomIcon) && req.files.roomIcon.length > 0){
+    roomIconLocalPath = req.files.roomIcon[0].path;
+    console.log(roomIconLocalPath);
+  }
+
+  const uploadedRoomIcon = await uploadOnCloudinary(roomIconLocalPath)
 
   const roomChat = await Chat.create({
     name,
     isRoomChat: true,
     participants: members,
     admin: req.user?._id,
+    roomIcon: uploadedRoomIcon?.url || ""
   });
 
   const chat = await Chat.aggregate([

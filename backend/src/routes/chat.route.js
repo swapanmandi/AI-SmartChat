@@ -21,7 +21,9 @@ router.use(verifyJWT);
 
 router.route("/chat-users").get(getChatUsers);
 router.route("/oneononechat/:id").post(createOrGetOneOnOneChat);
-router.route("/create-roomchat").post(createRoomChat);
+router
+  .route("/create-roomchat")
+  .post(upload.fields([{ name: "roomIcon", maxCount: 1 }]), createRoomChat);
 router.route("/all-chats").get(getAllChats);
 router.route("/room-info/:id").get(getRoomChatDetails);
 router.route("/rename-room/:id").patch(renameRoomName);

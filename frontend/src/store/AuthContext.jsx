@@ -50,18 +50,18 @@ const AuthProvider = ({ children }) => {
         data,
         { withCredentials: true }
       );
+
+      navigate("/app");
+      setToken(result.data.data.accessToken);
+      setUser(result.data.data.user);
+
+      localStorage.setItem("token", result.data.data.accessToken);
+      localStorage.setItem("user", JSON.stringify(result.data.data.user));
     } catch (error) {
       console.error("Error to sign in", error);
     } finally {
       setIsLoading(false);
     }
-
-    navigate("/app");
-    setToken(result.data.data.accessToken);
-    setUser(result.data.data.user);
-
-    localStorage.setItem("token", result.data.data.accessToken);
-    localStorage.setItem("user", JSON.stringify(result.data.data.user));
   };
 
   const signout = async () => {

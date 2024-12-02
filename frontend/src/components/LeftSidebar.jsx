@@ -6,6 +6,8 @@ import { AuthContext } from "../store/AuthContext.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { setOneOnOneChatInfo } from "../store/chatSlice.js";
 import apiClient from "../services/apiClient.js";
+import { useChat } from "../hooks/useChat.js";
+import { useSocket } from "../store/SocketContext.jsx";
 
 export default function LeftSidebar() {
   const [isClickedCreateBtn, setIsClickedCreateBtn] = useState(false);
@@ -18,11 +20,18 @@ export default function LeftSidebar() {
   const { user } = useContext(AuthContext);
   const dispatch = useDispatch();
 
+  const { fetchMessages } = useChat();
+  const { socket } = useSocket();
+
+  if (socket) {
+    //console.log("socket is avialable")
+  }
+
   const messageRef = useRef();
 
   const unreadMessages = useSelector((state) => state.chat.unreadMessages);
 
-  //console.log("unread", unreadMessages);
+  //console.log("unread msgon lsidebar", unreadMessages);
 
   const clickedCreateBtn = () => {
     setIsClickedCreateBtn(!isClickedCreateBtn);
@@ -102,6 +111,7 @@ export default function LeftSidebar() {
     if (pid) {
       createChat(pid);
     }
+    fetchMessages();
   };
 
   return (

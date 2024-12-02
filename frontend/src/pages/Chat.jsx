@@ -99,7 +99,7 @@ export default function Chat() {
     e.preventDefault();
 
     if (aiChatId) {
-      await axios.post(
+      const result = await axios.post(
         `${
           import.meta.env.VITE_BACKEND_API
         }/ai-messages/send-query/${aiChatId}`,
@@ -107,12 +107,12 @@ export default function Chat() {
         { withCredentials: true }
       );
 
-      dispatch(
-        addAiMessage({
-          content: query,
-          sender: { role: "user", user: user._id },
-        })
-      );
+      // dispatch(
+      //   addAiMessage({
+      //     content: result.data.data.query,
+      //     sender: { role: "user", user: user._id },
+      //   })
+      // );
       setQuery("");
     }
   };
@@ -157,7 +157,7 @@ export default function Chat() {
   const onAiMessageReceived = (newAiMessage) => {
     if (newAiMessage) {
       dispatch(addAiMessage(newAiMessage));
-      console.log("ai msg", newAiMessage);
+      //console.log("ai msg", newAiMessage);
     }
   };
 

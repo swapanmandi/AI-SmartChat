@@ -24,6 +24,8 @@ export const useChat = () => {
   const unreadMessages = useSelector((state) => state.chat.unreadMessages);
   //console.log("unread msg", unreadMessages);
 
+  console.log("current chat id on usechat:", chatId);
+
   // Fetch Messages
   const fetchMessages = async () => {
     try {
@@ -34,11 +36,12 @@ export const useChat = () => {
         console.error("No chat is selected");
       }
       if (!socket) {
-        //return alert("Soocket is not avialable");
-        console.error("Soocket is not avialable");
+        return alert("Soocket is not avialable");
+        //console.error("Soocket is not avialable");
       }
 
       socket.emit("joinChat", chatId);
+      ////////
 
       dispatch(
         setUnreadMessages(unreadMessages.filter((n) => n.chat !== chatId))
@@ -197,6 +200,8 @@ export const useChat = () => {
     handleDeleteOnOneChat,
     handleRenameRoom,
     removeUser,
-    handleClickedAiChat
+    handleClickedAiChat,
+    fetchMessages,
+
   };
 };

@@ -25,7 +25,7 @@ export default function Chat() {
   const [chatQuery, setChatQuery] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [image, setImage] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
+
   const [typingUser, setTypingUser] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
@@ -43,7 +43,7 @@ export default function Chat() {
   const aiChatId = useSelector((state) => state.chat.aiChatId);
 
   // console.log("ai message", aiMessages);
-  // console.log("current chat id:", chatId);
+  console.log("current chat id on chat page:", chatId);
   // console.log("ai chat id", aiChatId);
 
   useEffect(() => {
@@ -58,34 +58,10 @@ export default function Chat() {
     } else setQuery("");
   }, [chatQuery]);
 
-  const handleTyping = () => {
-    socket.emit("startTyping", chatId);
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit("stoppedTyping", chatId);
-    }, 1000);
-  };
-
-  const onTyping = (uid) => {
-    if (uid) {
-      setIsTyping(true);
-      setTypingUser(uid);
-    }
-  };
-
-  const stoppedTyping = () => {
-    // const updatedTypingUser = typingUser.filter(
-    //   (item) => item.userName != user.fullName
-    // );
-    // setTypingUser(updatedTypingUser);
-    setIsTyping(false);
-  };
-
   const handleInputChange = (e) => {
     setText(e.target.value);
-    if (!socket || !isConnected) return;
-
+    if (!socket) return;
+    // if (!socket || !isConnected) return;
     handleTyping();
   };
 
@@ -109,7 +85,10 @@ export default function Chat() {
 
   const handleMessageSubmit = (e) => {
     e.preventDefault();
+    if (!socket || !chatId) return;
+
     sendMessage(message);
+    // stop typing event
     setMessage("");
     setText("");
     setImage(null);
@@ -138,28 +117,42 @@ export default function Chat() {
     }
   };
 
-  const onConnect = () => {
-    setIsConnected(true);
-    //console.log(user?.fullName, " is connected to socket");
+  const handleTyping = () => {
+    socket.emit("startTyping", chatId);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stoppedTyping", chatId);
+    }, 1000);
   };
 
-  const onDisconnect = () => {
-    setIsConnected(false);
-    //console.log(user?.fullName, " is disconnected to socket");
+  const onTyping = (uid) => {
+    if (uid) {
+      setIsTyping(true);
+      setTypingUser(uid);
+    }
+  };
+
+  const stoppedTyping = () => {
+    // const updatedTypingUser = typingUser.filter(
+    //   (item) => item.userName != user.fullName
+    // );
+    // setTypingUser(updatedTypingUser);
+    setIsTyping(false);
   };
 
   // receive message
   const onMessageReceived = (newMessage) => {
-    //console.log("Message received from socket:", newMessage);
+    console.log("Message received from socket:", newMessage);
     if (newMessage?.chat !== chatId) {
+      console.log("its a unopened chat and saved to unread messages");
       dispatch(addUnreadMessage(newMessage));
     } else {
       dispatch(addMessage(newMessage));
+      console.log("its a opened chat and read on your chat");
     }
     //console.log(newMessage);
   };
-
-  // ai messages receive
 
   const onAiMessageReceived = (newAiMessage) => {
     if (newAiMessage) {
@@ -174,16 +167,13 @@ export default function Chat() {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on("connected", onConnect);
-    socket.on("disconnect", onDisconnect);
+
     socket.on("messageReceived", onMessageReceived);
     socket.on("receivedAiMessage", onAiMessageReceived);
     socket.on("messageDelete", onMessageDelete);
     socket.on("messageTyping", onTyping);
     socket.on("stoppedTyping", stoppedTyping);
     return () => {
-      socket.off("connected", onConnect);
-      socket.off("disconnect", onDisconnect);
       socket.off("messageReceived", onMessageReceived);
       socket.off("receivedAiMessage", onAiMessageReceived);
       socket.off("messageDelete", onMessageDelete);

@@ -9,14 +9,14 @@ import { SocketProvider } from "./store/SocketContext.jsx";
 function App() {
   return (
     <div className=" flex flex-col lg:flex-row h-svh w-svw">
-      <SocketProvider>
+      <AuthProvider>
         <UserContextProvider>
-          <AuthProvider>
+          <SocketProvider>
             <Header />
             <Outlet />
-          </AuthProvider>
+          </SocketProvider>
         </UserContextProvider>
-      </SocketProvider>
+      </AuthProvider>
     </div>
   );
 }

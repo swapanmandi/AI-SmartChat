@@ -29,7 +29,7 @@ export default function Login() {
             <label className=" flex flex-col m-4 lg:flex  lg:flex-row lg:text-center text-left lg:items-center">
               Email:
               <input
-                className=" text-black rounded-md h-8 w-72 p-3  m-2"
+                className=" text-black rounded-md h-8 w-1/2 p-3  m-2"
                 onChange={(e) => setEmail(e.target.value)}
                 value={email}
               ></input>
@@ -38,7 +38,7 @@ export default function Login() {
             <label className=" flex flex-col m-4 lg:flex lg:items-center lg:text-center text-left lg:flex-row">
               Password:
               <input
-                className=" text-black rounded-md h-8 w-72 p-3 m-2"
+                className=" text-black rounded-md h-8 w-1/2 p-3 m-2"
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
               ></input>

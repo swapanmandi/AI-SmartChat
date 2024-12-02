@@ -22,14 +22,14 @@ export default function Signup() {
 
   return (
     <>
-      <div className=" bg-red-300 h-screen w-screen items-center flex justify-center">
+      <div className=" bg-red-300 h-svh w-screen items-center flex justify-center">
         <div className=" w-11/12 h-3/6 bg-slate-500 lg:h-5/6 lg:w-6/12 items-center flex flex-col p-3">
           <h2>Sign Up</h2>
           <form onSubmit={handleSubmit} className=" flex flex-col items-center">
             <label className="flex flex-col lg:flex m-2 lg:items-center lg:flex-row">
               Name:
               <input
-                className=" text-black rounded-md m-2 h-8 w-72"
+                className=" text-black rounded-md m-2 h-8 w-3/4"
                 type="text"
                 onChange={(e) => setFullName(e.target.value)}
                 value={fullName}
@@ -39,7 +39,7 @@ export default function Signup() {
             <label className="flex flex-col lg:flex m-2 lg:items-center lg:flex-row">
               Email:
               <input
-                className=" text-black rounded-md m-2 h-8 w-72"
+                className=" text-black rounded-md m-2 h-8 w-3/4"
                 type="text"
                 onChange={(e) => setEmail(e.target.value)}
                 value={email}
@@ -49,7 +49,7 @@ export default function Signup() {
             <label className="flex flex-col lg:flex lg:flex-row m-2 lg:items-center">
               Password:
               <input
-                className=" text-black rounded-md m-2 h-8 w-72"
+                className=" text-black rounded-md m-2 h-8 w-3/4"
                 type="text"
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}

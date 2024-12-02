@@ -76,7 +76,7 @@ const createAiChat = asyncHandler(async (req, res) => {
   //   ]);
 
   const chatHistory = await Message.find({chat:chatId})
-    console.log("CHAT HISTORY:", chatHistory)
+    //console.log("CHAT HISTORY:", chatHistory)
 
     const chat = model.startChat({
       history:
@@ -107,6 +107,8 @@ const createAiChat = asyncHandler(async (req, res) => {
 
 
     existedAiChat.participants.forEach(item => {
+      //if(item.toString() === req.user?._id.toString()) return;
+      
       emitSocketEvent(req, item.toString(), "receivedAiMessage", sendQuery)
     })
     existedAiChat.participants.forEach(item => {
@@ -115,7 +117,7 @@ const createAiChat = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .json(new ApiResponse(200, { text }, "ai chat send successfully"));
+      .json(new ApiResponse(200, { query }, "ai chat send successfully"));
  
 });
 

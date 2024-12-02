@@ -23,7 +23,7 @@ export default function Home() {
   const onConnect = () => {
     setIsConnected(true);
     //console.log(user?.fullName, " is connected to socket");
-    alert("");
+    //alert("");
   };
 
   const onDisconnect = () => {

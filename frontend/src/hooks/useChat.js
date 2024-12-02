@@ -23,6 +23,7 @@ export const useChat = () => {
   const aiChatId = useSelector((state) => state.chat.aiChatId);
   const unreadMessages = useSelector((state) => state.chat.unreadMessages);
   //console.log("unread msg", unreadMessages);
+  console.log("ai chat id:", aiChatId)
 
   console.log("current chat id on usechat:", chatId);
 
@@ -72,7 +73,7 @@ export const useChat = () => {
           }/ai-messages/get-messages/${aiChatId}`,
           { withCredentials: true }
         );
-        console.log("get ai messages", result.data.data);
+        //console.log("get ai messages", result.data.data);
         dispatch(setAiMessages(result.data.data));
       }
     } catch (error) {
@@ -202,6 +203,6 @@ export const useChat = () => {
     removeUser,
     handleClickedAiChat,
     fetchMessages,
-
+    fetchAiChatMessages
   };
 };

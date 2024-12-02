@@ -74,7 +74,7 @@ export default function ChatDisplay({
     }
   }, [messages]);
 
-  // console.log("messages",messages)
+   console.log("messages",messages)
   //console.log("istyping", isTyping);
 
   return (

@@ -9,6 +9,9 @@ const createAiChat = asyncHandler(async (req, res) => {
     const { id: chatId } = req.params;
    
     const chat = await Chat.findById(chatId)
+    if(!chat.isRoomChat){
+      throw new ApiError(400, "It is not a rom chat")
+    }
 
     if(!chat){
       throw new ApiError(404, "Chat does not exist")

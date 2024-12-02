@@ -29,6 +29,7 @@ export default function ChatHeader({
     getRoomInfo,
     handleDeleteOnOneChat,
     handleClickedAiChat,
+    fetchAiChatMessages
   } = useChat();
 
   const roomInfo = useSelector((state) => state.chat.roomInfo);
@@ -323,14 +324,18 @@ export default function ChatHeader({
   };
 
   const handleClickedAiChatBtn = () => {
+    console.log("clicked ai chat")
+    handleClickedAiChat();
     setIsClickedAiChat(true);
+    fetchAiChatMessages()
+   
   };
 
-  useEffect(() => {
-    if (isClickedAiChat) {
-      handleClickedAiChat();
-    }
-  }, [chatId]);
+  // useEffect(() => {
+  //   if (isClickedAiChat) {
+  //     handleClickedAiChat();
+  //   }
+  // }, [chatId]);
 
   const handleClickedChat = () => {
     setIsClickedAiChat(false);
@@ -375,7 +380,7 @@ export default function ChatHeader({
 
         {/* AI CHAT */}
         <div
-          onClick={handleClickedAiChatBtn}
+          onClick={()=>handleClickedAiChatBtn()}
           className={`min-h-full w-1/2 flex justify-center items-center ${
             isClickedAiChat ? "bg-orange-400" : " bg-slate-950"
           } `}

@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../store/AuthContext.jsx";
 import Loader from "./Loader.jsx";
 import { useChat } from "../hooks/useChat.js";
+import { useSelector } from "react-redux";
 
 export default function ChatDisplay({
   isTyping,
@@ -16,6 +17,9 @@ export default function ChatDisplay({
 
   const { user, loading } = useContext(AuthContext);
   const lastMessageRef = useRef(null);
+  
+
+  const currentChatInfo = useSelector((state) => state.chat.currentChatInfo);
 
   // console.log("messages", messages);
   // console.log("user", user);
@@ -74,11 +78,12 @@ export default function ChatDisplay({
     }
   }, [messages]);
 
-   console.log("messages",messages)
+
+  //console.log("messages", messages);
   //console.log("istyping", isTyping);
 
   return (
-    <div className="h-full flex flex-col">
+    <div  className="h-full flex flex-col">
       {loading ? (
         <Loader />
       ) : (
@@ -92,7 +97,7 @@ export default function ChatDisplay({
                   messages[index - 1]?.sender?._id !== item.sender?._id;
 
                 return (
-                  <div key={index} className="bg-orange-400">
+                  <div  key={index} className="bg-orange-400">
                     <div
                       className={`w-full text-black p-2 flex ${
                         (item.sender?._id === user?._id ||
@@ -101,20 +106,23 @@ export default function ChatDisplay({
                       }`}
                     >
                       {/* Avatar */}
-                      <img
-                        src={item.sender?.avatar}
-                        className={`${
-                          (item.sender?._id === user?._id ||
-                            item.sender?.user === user?._id) &&
-                          "hidden"
-                        } ${showSender ? "block" : "invisible"} 
+                      <div>
+                        <img
+                          src={item.sender?.avatar}
+                          className={`${
+                            (item.sender?._id === user?._id ||
+                              item.sender?.user === user?._id) &&
+                            "hidden"
+                          } ${showSender ? "block" : "invisible"} 
                     h-8 w-8 rounded-full m-1`}
-                        alt="Sender Avatar"
-                      />
-
+                          alt="Sender Avatar"
+                        />
+                      </div>
                       {/* Message Bubble */}
                       <div
-                        onClick={() => clickedOnMessage(item._id)}
+                        onContextMenu={(e) => {
+                          e.preventDefault(), clickedOnMessage(item._id);
+                        }}
                         className=" relative max-w-[75%] bg-slate-100 rounded-md p-2 m-1 cursor-pointer flex flex-col h-fit"
                         ref={
                           index === messages.length - 1 ? lastMessageRef : null
@@ -141,7 +149,6 @@ export default function ChatDisplay({
                                   <img
                                     className="w-32 h-32 rounded-md"
                                     src={attachment.url}
-                                    alt="Attachment"
                                   />
                                 )}
                               </div>
@@ -153,6 +160,7 @@ export default function ChatDisplay({
                         <span className="text-end text-xs text-gray-500">
                           {timeFormat(item.createdAt)}
                         </span>
+
                         {selectMessageId === item._id && viewMessageOptions && (
                           <div
                             className={` absolute w-28  space-x-2 bg-yellow-400 flex flex-col rounded-md p-2 items-center space-y-1 m-1 z-20 ${
@@ -169,12 +177,13 @@ export default function ChatDisplay({
                               {isCopied ? "Copied" : "Copy"}
                             </span>
                             <span className=" cursor-pointer">Share</span>
-                            <span
+                            <button
                               onClick={() => handleChatQuery(item.content)}
-                              className=" cursor-pointer"
+                              className=" cursor-pointer disabled:text-slate-300 disabled:cursor-default"
+                              disabled={!currentChatInfo?.isRoomChat}
                             >
                               Ask to Ai
-                            </span>
+                            </button>
                             <span
                               onClick={() => handleDeleteMessage(item._id)}
                               className=" cursor-pointer"

@@ -2,13 +2,13 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   chatId: "",
-  aiChatId:"",
+  aiChatId: "",
   messages: [],
   aiMessages: [],
   unreadMessages: [],
   isLoading: false,
-  roomInfo: null,
   oneOnOneChatInfo: null,
+  currentChatInfo: null,
 };
 
 const chatSlice = createSlice({
@@ -18,8 +18,8 @@ const chatSlice = createSlice({
     setChatId: (state, action) => {
       state.chatId = action.payload;
     },
-    setAiChatId: (state, action)=>{
-      state.aiChatId = action.payload
+    setAiChatId: (state, action) => {
+      state.aiChatId = action.payload;
     },
     setMessages: (state, action) => {
       state.messages = action.payload;
@@ -37,9 +37,6 @@ const chatSlice = createSlice({
     setIsLoading: (state, action) => {
       state.isLoading = action.payload;
     },
-    setRoomInfo: (state, action) => {
-      state.roomInfo = action.payload;
-    },
     setOneOnOneChatInfo: (state, action) => {
       state.oneOnOneChatInfo = action.payload;
     },
@@ -54,6 +51,10 @@ const chatSlice = createSlice({
         (msg) => msg._id !== action.payload
       ); // Remove a message by ID
     },
+
+    setCurrentChatInfo: (state, action) => {
+      state.currentChatInfo = action.payload;
+    },
   },
 });
 
@@ -63,12 +64,12 @@ export const {
   setMessages,
   setAiMessages,
   setIsLoading,
-  setRoomInfo,
   setOneOnOneChatInfo,
   addMessage,
   addAiMessage,
   addUnreadMessage,
   setUnreadMessages,
   deleteMessage,
+  setCurrentChatInfo,
 } = chatSlice.actions;
 export default chatSlice.reducer;

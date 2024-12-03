@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useChat } from "../hooks/useChat";
 import Input from "../components/Input.jsx";
 import ChatDisplay from "../components/ChatDisplay.jsx";
@@ -45,6 +45,8 @@ export default function Chat() {
   // console.log("ai message", aiMessages);
   console.log("current chat id on chat page:", chatId);
   // console.log("ai chat id", aiChatId);
+
+  
 
   useEffect(() => {
     if (cid) {
@@ -200,7 +202,7 @@ export default function Chat() {
 
         {!isClickedAiChat ? (
           <div className=" bg-slate-950 h-[92%]">
-            <div className=" bg-lime-400 h-[90%]">
+            <div className=" bg-orange-400 h-[90%]">
               <ChatDisplay
                 messages={messages}
                 setIsClickedAiChat={setIsClickedAiChat}
@@ -225,7 +227,7 @@ export default function Chat() {
         ) : (
           // Ai Chat
           <div className=" bg-slate-950 h-[92%]">
-            <div className=" bg-lime-400 h-[90%]">
+            <div className=" bg-orange-400 h-[90%]">
               <ChatDisplay messages={aiMessages} />
             </div>
             <div className=" h-[10%] flex items-center justify-center">

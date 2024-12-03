@@ -2,8 +2,9 @@ import React, { useState, useContext, useRef, useEffect } from "react";
 import { AuthContext } from "../store/AuthContext.jsx";
 import { useUser } from "../store/UserContext.jsx";
 import { useChat } from "../hooks/useChat.js";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import { setAiMessages } from "../store/chatSlice.js";
 
 export default function ChatHeader({
   isClickedAiChat,
@@ -22,21 +23,23 @@ export default function ChatHeader({
   const { user } = useContext(AuthContext);
   const { userList, getUserList } = useUser();
 
+  const dispatch = useDispatch();
+
   const roomIconInputRef = useRef(null);
 
   const {
     typingUser,
-    getRoomInfo,
     handleDeleteOnOneChat,
     handleClickedAiChat,
-    fetchAiChatMessages
+    fetchAiChatMessages,
   } = useChat();
 
-  const roomInfo = useSelector((state) => state.chat.roomInfo);
+  //const currentChatInfo = useSelector((state) => state.chat.currentChatInfo);
   const chatId = useSelector((state) => state.chat.chatId);
-  const oneOnOneChatInfo = useSelector((state) => state.chat.oneOnOneChatInfo);
 
-  //console.log("single chat profile", oneOnOneChatInfo);
+  const currentChatInfo = useSelector((state) => state.chat.currentChatInfo);
+
+  //console.log("current chat:", currentChatInfo);
 
   const clickedonAddUser = () => {
     setIsClickedOnAddUser(true);
@@ -57,9 +60,9 @@ export default function ChatHeader({
 
   const handleClickedChatInfo = () => {
     setIsClickedChatInfo(!isClickedChatInfo);
-    if (!rid) {
-      getRoomInfo();
-    }
+    // if (!rid) {
+    //   getRoomInfo();
+    // }
   };
 
   const handleInputChange = (e) => {
@@ -179,15 +182,15 @@ export default function ChatHeader({
   };
 
   const renderRoomInfo = () => {
-    if (roomInfo?.isRoomChat && !rid) {
+    if (currentChatInfo.isRoomChat && !rid) {
       return (
         <div className="bg-slate-500 p-2 rounded-sm z-10 absolute">
-          {roomInfo?.roomIcon && (
+          {currentChatInfo?.roomIcon && (
             <div>
               <img
                 onClick={() => setIsClickedRoomIcon(!isClickedRoomIcon)}
                 className=" h-20 w-20"
-                src={roomInfo?.roomIcon}
+                src={currentChatInfo?.roomIcon}
               ></img>
             </div>
           )}
@@ -210,7 +213,7 @@ export default function ChatHeader({
           )}
 
           <div className="bg-red-300 mb-2 flex space-x-2">
-            <h2>{roomInfo.name}</h2>
+            <h2>{currentChatInfo.name}</h2>
             <button
               onClick={() => setIsRenameRoom(true)}
               className="p-1 rounded-md bg-slate-400"
@@ -281,7 +284,7 @@ export default function ChatHeader({
           )}
 
           <ul className="bg-orange-300">
-            {roomInfo.participants?.map((participant) => (
+            {currentChatInfo.participants?.map((participant) => (
               <li key={participant._id}>
                 <span>{participant.fullName}</span>
                 <button
@@ -300,10 +303,10 @@ export default function ChatHeader({
   };
 
   const renderOneOnOneChatInfo = () => {
-    if (oneOnOneChatInfo && rid) {
+    if (!currentChatInfo.isRoomChat && rid) {
       return (
         <div className="absolute bg-slate-500 z-20 p-2 rounded-md shadow-lg text-white">
-          {oneOnOneChatInfo?.participants?.map((item) => (
+          {currentChatInfo?.participants?.map((item) => (
             <div key={item._id} className="mb-2 last:mb-0">
               {item._id !== user._id && (
                 <div className="flex flex-col space-y-1">
@@ -324,11 +327,10 @@ export default function ChatHeader({
   };
 
   const handleClickedAiChatBtn = () => {
-    console.log("clicked ai chat")
+    dispatch(setAiMessages([]));
     handleClickedAiChat();
     setIsClickedAiChat(true);
-    fetchAiChatMessages()
-   
+    fetchAiChatMessages();
   };
 
   // useEffect(() => {
@@ -347,45 +349,47 @@ export default function ChatHeader({
         {/* CHAT */}
         <div
           onClick={handleClickedChat}
-          className={`h-full flex justify-around w-1/2 items-center ${
+          className={`h-full flex w-1/2 items-center ${
             isClickedAiChat ? " bg-slate-950" : " bg-orange-400"
           } `}
         >
           <div
             onClick={handleClickedChatInfo}
-            className=" object-contain h-10 w-10 rounded-full bg-white m-2"
+            className=" object-contain h-10 w-10 rounded-full bg-slate-400 m-2"
           >
-            {roomInfo?._id === chatId && (
+            
+            {currentChatInfo.isRoomChat ? (
               <img
                 className=" h-10 w-10"
-                src={roomInfo?.roomIcon}
+                src={currentChatInfo?.roomIcon || ""}
                 alt="Avatar"
               ></img>
-            )}
-            {oneOnOneChatInfo?.participants.find(
-              (item) => item._id === rid
-            ) && (
+            ) : (
               <img
                 src={
-                  oneOnOneChatInfo.participants.find((item) => item._id === rid)
-                    .avatar
+                  currentChatInfo.participants?.find((item) => item._id === rid)
+                    ?.avatar || ""
                 }
                 alt="Avatar"
               />
             )}
           </div>
           {renderTypingIndicator()}
-          <span>Chat</span>
+          {/* <span className="text-white font-bold">Chat</span> */}
+          {currentChatInfo.isRoomChat ? <h3>{currentChatInfo?.name}</h3> : <h3>{currentChatInfo.participants?.find((item) => item._id === rid)
+                    ?.fullName}</h3>}
         </div>
 
         {/* AI CHAT */}
         <div
-          onClick={()=>handleClickedAiChatBtn()}
+          onClick={ () => currentChatInfo.isRoomChat && handleClickedAiChatBtn()}
           className={`min-h-full w-1/2 flex justify-center items-center ${
             isClickedAiChat ? "bg-orange-400" : " bg-slate-950"
           } `}
         >
-          <span className="text-white font-bold">AI Chat</span>
+          {currentChatInfo.isRoomChat && (
+            <span className="text-white font-bold">AI Chat</span>
+          )}
         </div>
       </div>
 

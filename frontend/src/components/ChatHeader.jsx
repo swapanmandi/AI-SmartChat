@@ -182,7 +182,7 @@ export default function ChatHeader({
   };
 
   const renderRoomInfo = () => {
-    if (currentChatInfo.isRoomChat && !rid) {
+    if (currentChatInfo?.isRoomChat && !rid) {
       return (
         <div className="bg-slate-500 p-2 rounded-sm z-10 absolute">
           {currentChatInfo?.roomIcon && (
@@ -284,7 +284,7 @@ export default function ChatHeader({
           )}
 
           <ul className="bg-orange-300">
-            {currentChatInfo.participants?.map((participant) => (
+            {currentChatInfo?.participants?.map((participant) => (
               <li key={participant._id}>
                 <span>{participant.fullName}</span>
                 <button
@@ -303,7 +303,7 @@ export default function ChatHeader({
   };
 
   const renderOneOnOneChatInfo = () => {
-    if (!currentChatInfo.isRoomChat && rid) {
+    if (!currentChatInfo?.isRoomChat && rid) {
       return (
         <div className="absolute bg-slate-500 z-20 p-2 rounded-md shadow-lg text-white">
           {currentChatInfo?.participants?.map((item) => (
@@ -357,37 +357,49 @@ export default function ChatHeader({
             onClick={handleClickedChatInfo}
             className=" object-contain h-10 w-10 rounded-full bg-slate-400 m-2"
           >
-            
-            {currentChatInfo.isRoomChat ? (
-              <img
-                className=" h-10 w-10"
-                src={currentChatInfo?.roomIcon || ""}
-                alt="Avatar"
-              ></img>
+            {currentChatInfo?.isRoomChat ? (
+              <div>
+                <img
+                  className=" h-10 w-10"
+                  src={currentChatInfo?.roomIcon || ""}
+                />
+              </div>
             ) : (
-              <img
-                src={
-                  currentChatInfo.participants?.find((item) => item._id === rid)
-                    ?.avatar || ""
-                }
-                alt="Avatar"
-              />
+              <div>
+                <img
+                  src={
+                    currentChatInfo.participants?.find(
+                      (item) => item._id === rid
+                    )?.avatar || ""
+                  }
+                />
+              </div>
             )}
           </div>
           {renderTypingIndicator()}
           {/* <span className="text-white font-bold">Chat</span> */}
-          {currentChatInfo.isRoomChat ? <h3>{currentChatInfo?.name}</h3> : <h3>{currentChatInfo.participants?.find((item) => item._id === rid)
-                    ?.fullName}</h3>}
+          {currentChatInfo?.isRoomChat ? (
+            <h3>{currentChatInfo?.name}</h3>
+          ) : (
+            <h3>
+              {
+                currentChatInfo.participants?.find((item) => item._id === rid)
+                  ?.fullName
+              }
+            </h3>
+          )}
         </div>
 
         {/* AI CHAT */}
         <div
-          onClick={ () => currentChatInfo.isRoomChat && handleClickedAiChatBtn()}
+          onClick={() =>
+            currentChatInfo?.isRoomChat && handleClickedAiChatBtn()
+          }
           className={`min-h-full w-1/2 flex justify-center items-center ${
             isClickedAiChat ? "bg-orange-400" : " bg-slate-950"
           } `}
         >
-          {currentChatInfo.isRoomChat && (
+          {currentChatInfo?.isRoomChat && (
             <span className="text-white font-bold">AI Chat</span>
           )}
         </div>

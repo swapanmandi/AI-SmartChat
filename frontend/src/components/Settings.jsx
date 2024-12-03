@@ -54,9 +54,9 @@ export default function Settings() {
   }, []);
 
   return (
-    <>
-      <div>Settings</div>
-      <div>
+    <div className=" w-full h-full bg-slate-400">
+      <h3>Settings</h3>
+     
         <ol>
           <li onClick={() => setIsClickedPersonal(!isClickedPersonal)}>
             Personal
@@ -112,7 +112,6 @@ export default function Settings() {
                 {isClickedEdit && (
                   <div>
                     <label>
-                      {" "}
                       Name:
                       <input type="text"></input>
                     </label>
@@ -130,6 +129,6 @@ export default function Settings() {
           )}
         </ol>
       </div>
-    </>
+   
   );
 }

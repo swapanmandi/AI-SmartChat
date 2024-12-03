@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRef } from "react";
 
 export default function Input({
@@ -16,10 +16,17 @@ export default function Input({
   //console.log("img", image)
 
   const addImageRef = useRef(null);
+  //const inputRef = useRef(null);
 
   const handleClickAddImage = () => {
     addImageRef.current.click();
   };
+
+  useEffect(() => {
+    if (typingTimeoutRef.current) {
+      typingTimeoutRef.current.focus();
+    }
+  }, []);
 
   return (
     <div className=" w-9/12 bg-blue-500 h-full content-center p-2 px-3">

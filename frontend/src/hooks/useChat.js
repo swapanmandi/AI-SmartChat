@@ -7,10 +7,9 @@ import {
   setMessages,
   setAiMessages,
   setUnreadMessages,
-  setRoomInfo,
 } from "../store/chatSlice.js";
 import { useSocket } from "../store/SocketContext.jsx";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const useChat = () => {
@@ -22,9 +21,11 @@ export const useChat = () => {
   const chatId = useSelector((state) => state.chat.chatId);
   const aiChatId = useSelector((state) => state.chat.aiChatId);
   const unreadMessages = useSelector((state) => state.chat.unreadMessages);
+
+
+
   //console.log("unread msg", unreadMessages);
   console.log("ai chat id:", aiChatId)
-
   console.log("current chat id on usechat:", chatId);
 
   // Fetch Messages
@@ -122,20 +123,20 @@ export const useChat = () => {
 
   // fetch room info
 
-  const getRoomInfo = async () => {
-    try {
-      const result = await axios.get(
-        `${import.meta.env.VITE_BACKEND_API}/chats/room-info/${chatId}`,
-        {
-          withCredentials: true,
-        }
-      );
-      //console.log("room info", result.data.data);
-      dispatch(setRoomInfo(result.data.data));
-    } catch (error) {
-      console.error("error to fetch room info");
-    }
-  };
+  // const getRoomInfo = async () => {
+  //   try {
+  //     const result = await axios.get(
+  //       `${import.meta.env.VITE_BACKEND_API}/chats/room-info/${chatId}`,
+  //       {
+  //         withCredentials: true,
+  //       }
+  //     );
+  //     //console.log("room info", result.data.data);
+  //     dispatch(setRoomInfo(result.data.data));
+  //   } catch (error) {
+  //     console.error("error to fetch room info");
+  //   }
+  // };
 
   // delete oneonone chat
 
@@ -180,13 +181,14 @@ export const useChat = () => {
       { withCredentials: true }
     );
     dispatch(setAiChatId(result.data.data?._id));
+    dispatch(setAiChatInfo(result.data.data))
   };
 
     const handleClickedAiChat = () => {
      
-      dispatch(setAiMessages([]));
+      //dispatch(setAiMessages([]));
       createAiChat();
-      fetchAiChatMessages();
+      //fetchAiChatMessages();
     };
 
   // Fetch Messages
@@ -197,7 +199,6 @@ export const useChat = () => {
   return {
     sendMessage,
     handleDeleteMessage,
-    getRoomInfo,
     handleDeleteOnOneChat,
     handleRenameRoom,
     removeUser,

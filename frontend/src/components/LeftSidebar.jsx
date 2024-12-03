@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../store/UserContext.jsx";
 import { AuthContext } from "../store/AuthContext.jsx";
 import { useDispatch, useSelector } from "react-redux";
-import { setOneOnOneChatInfo } from "../store/chatSlice.js";
+import { setCurrentChatInfo, setOneOnOneChatInfo } from "../store/chatSlice.js";
 import apiClient from "../services/apiClient.js";
 import { useChat } from "../hooks/useChat.js";
 import { useSocket } from "../store/SocketContext.jsx";
@@ -20,7 +20,7 @@ export default function LeftSidebar() {
   const { user } = useContext(AuthContext);
   const dispatch = useDispatch();
 
-  const { fetchMessages } = useChat();
+  const { fetchMessages, getRoomInfo } = useChat();
   const { socket } = useSocket();
 
   if (socket) {
@@ -98,8 +98,6 @@ export default function LeftSidebar() {
           }
         );
         dispatch(setOneOnOneChatInfo(result.data.data));
-        //console.log("c info", result.data.data);
-        // navigate(`/app/chat/${result.data.data?._id}/${rid}`);
         setIsClickedCreateBtn(false);
       }
     } catch (error) {
@@ -107,10 +105,11 @@ export default function LeftSidebar() {
     }
   };
 
-  const handleClickedChat = (pid) => {
-    if (pid) {
-      createChat(pid);
+  const handleClickedChat = (data) => {
+    if (data.pid) {
+      createChat(data.pid);
     }
+    dispatch(setCurrentChatInfo(data.chat));
     fetchMessages();
   };
 
@@ -216,10 +215,10 @@ export default function LeftSidebar() {
         {chats?.map((item, index) => (
           <div className=" overflow-hidden">
             {item.isRoomChat ? (
-              <Link to={`/app/room-chat/${item._id}`}>
+              <Link to={`/app/room-chat/${item._id}`}  >
                 <div
-                  onClick={() => handleClickedChat()}
-                  className={` mb-2 rounded-md p-1 bg-slate-400`}
+                  onClick={() => handleClickedChat({ pid: null, chat: item })}
+                  className={`mb-2 cursor-pointer bg-slate-400 flex justify-between lg:pr-7 p-1 rounded-md`}
                 >
                   {item.name}
 
@@ -243,11 +242,13 @@ export default function LeftSidebar() {
                 (participant) =>
                   participant?._id !== user?._id && (
                     <div
-                      onClick={() => handleClickedChat(participant._id)}
+                      onClick={() =>
+                        handleClickedChat({ pid: participant._id, chat: item })
+                      }
                       key={participant._id}
                       className=" w-full"
                     >
-                      <Link to={`/app/chat/${item._id}/${participant._id}`}>
+                      <Link to={`/app/chat/${item._id}/${participant._id}`} >
                         <div
                           ref={messageRef}
                           className={` mb-2 cursor-pointer bg-slate-400 flex justify-between lg:pr-7 p-1 rounded-md `}

@@ -6,6 +6,7 @@ const initialState = {
   messages: [],
   aiMessages: [],
   unreadMessages: [],
+  chats: [],
   isLoading: false,
   oneOnOneChatInfo: null,
   currentChatInfo: null,
@@ -51,9 +52,11 @@ const chatSlice = createSlice({
         (msg) => msg._id !== action.payload
       ); // Remove a message by ID
     },
-
     setCurrentChatInfo: (state, action) => {
       state.currentChatInfo = action.payload;
+    },
+    setChats: (state, action) => {
+      state.chats = action.payload;
     },
   },
 });
@@ -71,5 +74,6 @@ export const {
   setUnreadMessages,
   deleteMessage,
   setCurrentChatInfo,
+  setChats,
 } = chatSlice.actions;
 export default chatSlice.reducer;

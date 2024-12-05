@@ -16,11 +16,16 @@ export default function Settings() {
   const handleCancelEdit = () => {
     setIsClickedEdit(false);
   };
-  const handleSaveEdit = () => {};
+  const handleSaveEdit = () => { };
 
   const handleAvatarChange = () => {
     setIsChangeAvatar(true);
   };
+
+  const handleClickAvatarChange = () => {
+    setAvatarPreview("");
+    setIsChangeAvatar(false)
+  }
 
   const handleViewAvatar = (e) => {
     const file = e.target.files[0];
@@ -85,11 +90,11 @@ export default function Settings() {
             <section className=" w-full avatar-upload bg-slate-500 flex justify-between  space-x-4 p-4 rounded-lg">
               {/* Avatar Display */}
               <div className=" flex justify-between">
-                {user?.avatar ? (
+                {user?.avatar || avatarPreview ? (
                   <div className="avatar h-20 w-20 rounded-full overflow-hidden">
                     <img
                       className="h-full w-full object-cover"
-                      src={user?.avatar}
+                      src={avatarPreview ? avatarPreview : user?.avatar}
                       alt="User Avatar"
                     />
                   </div>
@@ -123,7 +128,7 @@ export default function Settings() {
 
                   <div className=" w-fit flex justify-between">
                     <button
-                      onClick={() => setIsChangeAvatar(false)}
+                      onClick={handleClickAvatarChange}
                       className="save-avatar-button p-2 rounded-md bg-red-300 text-white"
                       type="button"
                     >

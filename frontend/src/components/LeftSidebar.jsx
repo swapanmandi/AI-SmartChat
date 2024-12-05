@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCurrentChatInfo, setOneOnOneChatInfo } from "../store/chatSlice.js";
 import apiClient from "../services/apiClient.js";
 import { useSocket } from "../store/SocketContext.jsx";
+import logo from "../assets/ai-smart-chat.jpeg";
 
 export default function LeftSidebar() {
   const [isClickedCreateBtn, setIsClickedCreateBtn] = useState(false);
@@ -111,9 +112,13 @@ export default function LeftSidebar() {
   };
 
   return (
-    <div className=" bg-slate-900 w-full">
-      <div className=" bg-slate-900 w-full h-11 flex justify-between p-2 pr-3">
-        <h2 className=" font-semibold">Ai Smart Chat App</h2>
+    <div className=" bg-slate-900 w-full h-full">
+      <div className=" bg-slate-600 w-full h-12 flex justify-between p-2 pr-3 mb-1">
+        <div className=" flex items-center space-x-2">
+          <img src={logo} type="image/jpeg" className=" w-10 h-10" />
+          <h2 className=" font-semibold">AI Smart Chat</h2>
+        </div>
+
         <button onClick={clickedCreateBtn}>
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -82,12 +82,24 @@ export default function Header() {
 
       <div className=" top-20 w-full lg:w-fit absolute z-30 lg:left-14 lg:top-0 lg:max-h-full lg:overflow-hidden">
         {isClickProfile && (
-          <div className=" lg:left-12 w-full h-96  lg:w-96 overflow-hidden ">
+          <div className="  bg-slate-800 lg:left-12 w-full h-full  lg:w-96 overflow-hidden ">
             <Profile />
+            <div className=" w-full flex justify-end p-4">
+              <button
+                onClick={() => {
+                 setIsClickProfile(false);
+                  setIsClickedSettings(false);
+                }}
+                className=" bg-red-400 lg:left-80 p-1 rounded-md"
+              >
+                Close
+              </button>
+            </div>
+            
           </div>
         )}
         {isClickedSettings && (
-          <div className={`lg:left-12 w-full h-fit  lg:w-96`}>
+          <div className={` bg-slate-600 lg:left-12 w-full h-fit  lg:w-96`}>
             <ul className=" bg-slate-600  flex flex-col">
               <li
                 onClick={() => setIsClickedAccount(!isClickedAccount)}
@@ -105,11 +117,32 @@ export default function Header() {
                 Logout
               </li>
             </ul>
+            <div className=" w-full flex justify-end p-4">
+              <button
+                onClick={() => {
+                  setIsClickedSettings(false);
+                }}
+                className=" bg-red-400 lg:left-80 p-1 rounded-md"
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
         {isClickedAccount && (
-          <div className=" lg:left-96 z-10 w-full lg:w-96 h-fit">
+          <div className=" bg-slate-400 lg:left-96 z-10 w-full lg:w-96 h-fit">
             <Settings />
+            <div className=" w-full flex justify-end p-4">
+              <button
+                onClick={() => {
+                  setIsClickedAccount(false);
+                  setIsClickedSettings(false);
+                }}
+                className=" bg-red-400 lg:left-80 p-1 rounded-md"
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
       </div>

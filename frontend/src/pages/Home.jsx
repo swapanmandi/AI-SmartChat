@@ -82,14 +82,14 @@ export default function Home() {
       <div className="flex w-full flex-col items-center justify-center min-h-screen bg-gray-100 overflow-hidden">
         <main className="flex flex-col items-center justify-center flex-grow w-full px-4 py-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Welcome to My AI Chat App
+            AI Smart Chat
           </h2>
           <p className=" text-gray-800 ">Select a Chat and satrt Messaging</p>
         </main>
 
         <footer className="w-full py-4 bg-white shadow-md">
           <div className="container mx-auto px-4 text-center text-gray-600">
-            &copy; {new Date().getFullYear()} My AI Chat App. All rights
+            &copy; {new Date().getFullYear()} AI Smart Chat. All rights
             reserved.
           </div>
         </footer>

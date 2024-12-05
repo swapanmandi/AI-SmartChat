@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, } from "react-router-dom";
 import { useChat } from "../hooks/useChat";
 import Input from "../components/Input.jsx";
 import ChatDisplay from "../components/ChatDisplay.jsx";
@@ -43,10 +43,12 @@ export default function Chat() {
   const aiChatId = useSelector((state) => state.chat.aiChatId);
 
   // console.log("ai message", aiMessages);
-  console.log("current chat id on chat page:", chatId);
+  //console.log("current chat id on chat page:", chatId);
   // console.log("ai chat id", aiChatId);
 
-  
+  window.onpopstate = function(event) {
+    window.location.href = "/app";
+  };
 
   useEffect(() => {
     if (cid) {

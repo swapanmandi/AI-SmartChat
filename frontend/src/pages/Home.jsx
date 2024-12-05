@@ -8,6 +8,8 @@ import {
 } from "../store/chatSlice.js";
 import { useSocket } from "../store/SocketContext.jsx";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { useAuth } from "../store/AuthContext.jsx";
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
@@ -15,6 +17,7 @@ export default function Home() {
   const { socket } = useSocket();
   const dispatch = useDispatch();
   const chatId = useSelector((state) => state.chat.chatId);
+  const { token, user } = useAuth();
 
   useEffect(() => {
     dispatch(setChatId(""));
@@ -69,16 +72,27 @@ export default function Home() {
   }, [socket]);
 
   return (
-    <div className=" flex h-full w-full flex-col lg:flex-row ">
-      <div className=" w-full lg:w-96">
-        <LeftSidebar />
-      </div>
-
-      <div className=" bg-red-500 h-full w-full flex items-center justify-center">
-        <div className=" text-center">
-          <h2>Select a Chat and Start Messeging with</h2>
-          <h1>SMART AI CHAT APP</h1>
+    <div className=" relative flex h-full w-full flex-col lg:flex-row ">
+      {token && user?._id && (
+        <div className=" w-full lg:w-96">
+          <LeftSidebar />
         </div>
+      )}
+
+      <div className="flex w-full flex-col items-center justify-center min-h-screen bg-gray-100 overflow-hidden">
+        <main className="flex flex-col items-center justify-center flex-grow w-full px-4 py-8">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            Welcome to My AI Chat App
+          </h2>
+          <p className=" text-gray-800 ">Select a Chat and satrt Messaging</p>
+        </main>
+
+        <footer className="w-full py-4 bg-white shadow-md">
+          <div className="container mx-auto px-4 text-center text-gray-600">
+            &copy; {new Date().getFullYear()} My AI Chat App. All rights
+            reserved.
+          </div>
+        </footer>
       </div>
     </div>
   );

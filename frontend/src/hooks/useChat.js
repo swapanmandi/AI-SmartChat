@@ -145,7 +145,7 @@ export const useChat = () => {
       `${import.meta.env.VITE_BACKEND_API}/chats/delete-chat/${chatId}`,
       { withCredentials: true }
     );
-    navigate("/app");
+    navigate("/");
     //setIsClickedChatInfo(false);
   };
 
@@ -181,7 +181,7 @@ export const useChat = () => {
       { withCredentials: true }
     );
     dispatch(setAiChatId(result.data.data?._id));
-    dispatch(setAiChatInfo(result.data.data))
+    
   };
 
     const handleClickedAiChat = () => {

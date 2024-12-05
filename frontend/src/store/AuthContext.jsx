@@ -33,7 +33,7 @@ const AuthProvider = ({ children }) => {
           withCredentials: true,
         }
       );
-      navigate("/login");
+      navigate("/signin");
     } catch (error) {
       console.error("Error to sign up.", error);
     } finally {
@@ -51,7 +51,7 @@ const AuthProvider = ({ children }) => {
         { withCredentials: true }
       );
 
-      navigate("/app");
+      navigate("/");
       setToken(result.data.data.accessToken);
       setUser(result.data.data.user);
 

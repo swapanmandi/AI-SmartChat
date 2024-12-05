@@ -51,7 +51,7 @@ const router = createBrowserRouter([
             element: <Chat />,
           },
           {
-            path: "/app/room-chat/:cid",
+            path: "/app/room-chat/:cid" ,
             element: <Chat />,
           },
           {

@@ -104,7 +104,7 @@ export default function ChatHeader({
       `${import.meta.env.VITE_BACKEND_API}/chats/delete-room/${chatId}`,
       { withCredentials: true }
     );
-    navigate("/app");
+    navigate("/");
   };
 
   const RemoveUser = async (userId) => {
@@ -285,10 +285,10 @@ export default function ChatHeader({
 
           <ul className="bg-orange-300">
             {currentChatInfo?.participants?.map((participant) => (
-              <li key={participant._id}>
-                <span>{participant.fullName}</span>
+              <li key={participant?._id}>
+                <span>{participant?.fullName}</span>
                 <button
-                  onClick={() => handleRemoveUser(participant._id)}
+                  onClick={() => handleRemoveUser(participant?._id)}
                   className="text-red-500"
                 >
                   Remove
@@ -368,7 +368,7 @@ export default function ChatHeader({
               <div>
                 <img
                   src={
-                    currentChatInfo.participants?.find(
+                    currentChatInfo?.participants?.find(
                       (item) => item._id === rid
                     )?.avatar || ""
                   }
@@ -383,7 +383,7 @@ export default function ChatHeader({
           ) : (
             <h3>
               {
-                currentChatInfo.participants?.find((item) => item._id === rid)
+                currentChatInfo?.participants?.find((item) => item._id === rid)
                   ?.fullName
               }
             </h3>

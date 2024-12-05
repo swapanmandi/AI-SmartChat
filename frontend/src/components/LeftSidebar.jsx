@@ -1,12 +1,11 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useUser } from "../store/UserContext.jsx";
 import { AuthContext } from "../store/AuthContext.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentChatInfo, setOneOnOneChatInfo } from "../store/chatSlice.js";
 import apiClient from "../services/apiClient.js";
-import { useChat } from "../hooks/useChat.js";
 import { useSocket } from "../store/SocketContext.jsx";
 
 export default function LeftSidebar() {
@@ -20,7 +19,6 @@ export default function LeftSidebar() {
   const { user } = useContext(AuthContext);
   const dispatch = useDispatch();
 
-  const { fetchMessages, getRoomInfo } = useChat();
   const { socket } = useSocket();
 
   if (socket) {
@@ -110,7 +108,6 @@ export default function LeftSidebar() {
       createChat(data.pid);
     }
     dispatch(setCurrentChatInfo(data.chat));
-    fetchMessages();
   };
 
   return (
@@ -215,7 +212,7 @@ export default function LeftSidebar() {
         {chats?.map((item, index) => (
           <div className=" overflow-hidden">
             {item.isRoomChat ? (
-              <Link to={`/app/room-chat/${item._id}`}  >
+              <Link to={`/app/room-chat/${item._id}`}>
                 <div
                   onClick={() => handleClickedChat({ pid: null, chat: item })}
                   className={`mb-2 cursor-pointer bg-slate-400 flex justify-between lg:pr-7 p-1 rounded-md`}
@@ -248,7 +245,7 @@ export default function LeftSidebar() {
                       key={participant._id}
                       className=" w-full"
                     >
-                      <Link to={`/app/chat/${item._id}/${participant._id}`} >
+                      <Link to={`/app/chat/${item._id}/${participant._id}`}>
                         <div
                           ref={messageRef}
                           className={` mb-2 cursor-pointer bg-slate-400 flex justify-between lg:pr-7 p-1 rounded-md `}

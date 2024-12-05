@@ -5,7 +5,7 @@ import { useAuth } from "../store/AuthContext.jsx";
 export default function ProtectedRoute() {
   const { token, user } = useAuth();
   // console.log("token", token);
-  // console.log("oading", isLoading); 
+  // console.log("user", user);
 
-  return token && user?._id ? <Outlet /> : <Navigate to="/signin" />;
+  return token || user?._id ? <Outlet /> : <Navigate to="/signin" />;
 }
